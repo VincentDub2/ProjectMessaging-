@@ -156,6 +156,17 @@ void *handle_client(void *arg) {
             break;
         }
 
+        // Si le client envoie la commande "/quit", déconnectez-le
+        if (strcmp(buffer, "/quit") == 0) {
+            disconnect_client(info);
+            return NULL;
+        }
+
+        // Gérez les autres commandes et messages ici
+        // Créer des fonctions pour chaque commande
+
+
+
         if (strncmp(buffer, "/mp ", 4) == 0) {
             // Divise la chaîne en tokens séparés par un espace
             char *token = strtok(buffer + 4, " ");
@@ -182,13 +193,11 @@ void *handle_client(void *arg) {
 
     //deconnexion du client
     // Fermer le socket et retirer le client de la liste chaînée
-    close(client_socket);
-    remove_client_from_list(client_index);
 
-    free(info);
-    printf("Client %d déconnecté\n", client_index + 1);
-    pthread_exit(NULL);
+    disconnect_client(info);
 }
+
+
 
 
 void shutdown_server(int server_socket) {
@@ -197,4 +206,22 @@ void shutdown_server(int server_socket) {
     printf("Serveur correctement arrêté\n");
 }
 
+
+
+void disconnect_client(client_info *info) {
+    int client_socket = info->socket_fd;
+    int client_index = info->index;
+
+    // Fermer le socket et retirer le client de la liste chaînée
+    close(client_socket);
+    remove_client_from_list(client_index);
+
+    // Libérer la mémoire allouée pour le client
+    free(info);
+
+    printf("Client %d déconnecté\n", client_index + 1);
+
+    // Terminer le thread associé au client
+    pthread_exit(NULL);
+}
 
