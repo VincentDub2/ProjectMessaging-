@@ -1,1 +1,5 @@
 cmake-build-debug
+.idea
+serveur
+client
+```
