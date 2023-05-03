@@ -3,4 +3,4 @@ cmake-build-debug
 serveur
 client
 CMakeLists.txt
-```
+*.O
