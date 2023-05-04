@@ -24,10 +24,17 @@ int main() {
 
     int socket_fd = create_socket();
 
+    // Configuration du signal SIGINT (Ctrl+C)
     setup_sigint_handler(socket_fd);
 
+    // Connection au serveur
     connect_to_server(socket_fd, SERVER_IP, PORT);
     printf("Connecté au serveur\n");
+
+    // Demande le pseudo du client
+
+    void *pseudo = ask_for_pseudo(socket_fd);
+
 
     pthread_t send_thread, receive_thread;
 

@@ -11,6 +11,7 @@ client_info* get_head_list(void);
 pthread_mutex_t* get_mutex_list(void);
 client_info* get_client_by_pseudo(char* pseudo);
 client_info* get_client_by_index(int client_index);
+int is_pseudo_available(char *pseudo);
 
 
 // Pointeur vers la tête de la liste chaînée des clients
@@ -130,4 +131,34 @@ client_info* get_head_list(){
 
 pthread_mutex_t* get_mutex_list(){
     return &client_list_mutex;
+}
+
+int is_pseudo_available(char *pseudo) {
+
+    printf("Vérification de la disponibilité du pseudo %s\n", pseudo);
+
+    pthread_mutex_lock(&client_list_mutex);
+
+    printf("Verrouillage mutex client_list_mutex\n");
+
+    client_info *curr = client_list_head;
+
+    printf("Recuperation tete de liste \n");
+
+    while (curr != NULL) {
+        printf("Parcours de la liste des clients\n");
+        if (curr->pseudo != NULL) {
+            if (strcmp(curr->pseudo, pseudo) == 0) {
+                pthread_mutex_unlock(&client_list_mutex);
+                printf("Le pseudo %s est déjà pris.\n", pseudo);
+                return 0; // Le pseudo est déjà pris
+            }
+        }
+        curr = curr->next;
+    }
+
+    pthread_mutex_unlock(&client_list_mutex);
+    printf("Le pseudo %s est disponible.\n", pseudo);
+
+    return 1; // Le pseudo est disponible
 }

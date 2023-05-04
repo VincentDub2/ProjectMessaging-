@@ -19,7 +19,8 @@
 
 #include "../../include/serveur/serveur_utils.h"
 
-#include "../../include/serveur/common.h" // Permet de définir des constantes pour plusieurs fichiers
+#include "../../include/common.h" // Permet de définir des constantes pour plusieurs fichiers
+
 //Ici on va utiliser BUFFER_SIZE
 
 // Fonctions pour gérer les clients et la liste des clients
@@ -76,13 +77,9 @@ void wait_for_clients(int server_socket) {
         info->socket_fd = client_socket;
         info->index = client_count++;
         info->next = NULL;
-
-        char pseudo[16]; // Assurez-vous que la taille du tampon est suffisante pour contenir le pseudo
-        sprintf(pseudo, "User%d", info->index);
-
-        info->pseudo = strdup(pseudo); // Utilisez strdup pour copier le contenu du tampon dans la mémoire allouée
-
         info->thread_id = thread_id;
+        info->pseudo = NULL;
+
         add_client_to_list(info);
 
         // Créer un thread pour gérer le client
@@ -95,13 +92,38 @@ void wait_for_clients(int server_socket) {
     }
 }
 
-void *handle_client(void *arg) {
 
+void *handle_client(void *arg) {
     // Récupéré les informations du client
     client_info *info = (client_info *) arg;
 
     int client_socket = info->socket_fd;
     int client_index = info->index;
+
+    int pseudo_set = 0; // Indique si le pseudo du client a été défini
+
+    char pseudo_buffer[MAX_PSEUDO_LENGTH + 1];
+
+    while (!pseudo_set){
+
+        memset(pseudo_buffer, 0, MAX_PSEUDO_LENGTH + 1);
+
+        recv(client_socket, pseudo_buffer, MAX_PSEUDO_LENGTH + 1, 0);
+
+        printf("Pseudo reçu : %s\n", pseudo_buffer);
+
+        // Vérifier si le pseudo est disponible
+        if (is_pseudo_available(pseudo_buffer)) {
+            send(client_socket, "PSEUDO_OK", 9, 0); // Envoie "PSEUDO_OK" si le pseudo est disponible
+            pseudo_set = 1;
+        } else {
+            send(client_socket, "PSEUDO_TAKEN", 12, 0); // Envoie "PSEUDO_TAKEN" si le pseudo est déjà pris
+            continue; // Passe à la prochaine itération pour attendre un nouveau client
+        }
+    }
+
+    info->pseudo = strdup(pseudo_buffer);
+
 
     // Configurer le socket en mode non bloquant
     int flags = fcntl(client_socket, F_GETFL, 0);
@@ -183,6 +205,8 @@ void *handle_client(void *arg) {
 
     disconnect_client(info);
 }
+
+
 
 void disconnect_client(client_info *info) {
     int client_socket = info->socket_fd;

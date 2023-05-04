@@ -1,4 +1,5 @@
 // rk_sema.h
+// Fichier permettant de rendre compatible le programme entre les systèmes d'exploitation linux / apple
 
 #ifdef __APPLE__
 #include <dispatch/dispatch.h>
