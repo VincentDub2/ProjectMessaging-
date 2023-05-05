@@ -23,21 +23,6 @@
 
 //Ici on va utiliser BUFFER_SIZE
 
-// Fonctions pour gérer les clients et la liste des clients
-//Gère la communication avec le client.
-//Lit les messages du client et les retransmet à tous les autres clients.
-//Supprime le client de la liste et ferme le socket lors de la déconnexion.
-void *handle_client(void *arg);
-
-// Fonction pour attendre les connexions des clients
-//Accepte les connexions des clients.
-//Crée un nouvel élément client_info et l'ajoute à la liste des clients.
-//Crée un thread pour gérer chaque client.
-void wait_for_clients(int server_socket);
-
-void disconnect_client(client_info *info);
-
-// Implémentez vos fonctions liées à la gestion des clients et de leurs threads ici
 
 void wait_for_clients(int server_socket) {
 

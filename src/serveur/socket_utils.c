@@ -7,13 +7,6 @@
 
 #include "../../include/serveur/socket_utils.h"
 
-// Fonction qui permet de fermer le serveur proprement
-//Ferme le socket serveur.
-//Appelle shutdown_client_list() pour détruire le mutex et libérer la liste des clients
-void shutdown_server(int server_socket);
-
-int create_server_socket(struct sockaddr_in *server_addr, int port);
-
 
 int create_server_socket(struct sockaddr_in *server_addr, int port) {
     // Créer un socket TCP

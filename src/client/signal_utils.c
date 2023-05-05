@@ -3,21 +3,9 @@
 //
 //Description : Fonctions pour gérer les signaux
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "../../include/client/signal_utils.h"
-
-
-
-void sigint_handler(int signum);
-void setup_sigint_handler(int server_socket);
-int get_client_running(void);
-void set_client_running(int value);
-
-
-
 
 volatile sig_atomic_t client_running= 1; // Variable pour indiquer si le serveur est en cours d'exécution
 

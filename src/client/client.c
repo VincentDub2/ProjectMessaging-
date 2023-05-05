@@ -7,17 +7,9 @@
 #include "../../include/client/affichage_utils.h"
 #include "../../include/client/signal_utils.h"
 #include "../../include/client/client_utils.h"
+#include ".../../common.h"
 
-#define SERVER_IP "127.0.0.1"  // Adresse IP du serveur
-#define PORT 8080             // Port du serveur
-#define BUFFER_SIZE 1024      // Taille du tampon pour les messages
-#define MAX_MESSAGE_LENGTH 1000 // Longueur maximale d'un message (doit être légèrement inférieure à BUFFER_SIZE)
 
-// Fonction pour envoyer des messages
-void *send_messages(void *arg);
-
-// Fonction pour recevoir des messages
-void *receive_messages(void *arg);
 
 int main() {
     // Crée un nouveau socket et se connecte au serveur
@@ -57,7 +49,7 @@ int main() {
     // Ferme le socket
     close(socket_fd);
 
-    printf("Fin de connection\n");
+    printf("\r Fin de connection\n");
     return 0;
 }
 

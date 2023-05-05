@@ -12,11 +12,7 @@
 
 #include "../../include/serveur/serveur_utils.h"
 
-#define PORT 8080          // Port d'écoute du serveur
-#define BACKLOG 5 // Longueur de la file d'attente pour les connexions entrantes
-
-// printf("\033[A\023[2K"); // Effacer ligne précédente
-
+#include "../../include/common.h"
 
 
 

@@ -8,9 +8,6 @@
 #include "../../include/serveur/communication_utils.h"
 
 
-void mp_client(int sender_index,const char* pseudo, const char* message);
-void send_message_to_all_clients(int sender_index, const char* message);
-
 void send_fin(){
     char message[100];
     sprintf(message, "/fin");

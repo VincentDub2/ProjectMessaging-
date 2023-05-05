@@ -9,13 +9,6 @@
 
 #include "../../include/serveur/serveur_utils.h"
 
-void sigint_handler(int signum);
-void setup_sigint_handler(int server_socket);
-int get_server_running(void);
-void set_server_running(int value);
-
-
-
 
 volatile sig_atomic_t server_running = 1; // Variable pour indiquer si le serveur est en cours d'exécution
 int server_socket;

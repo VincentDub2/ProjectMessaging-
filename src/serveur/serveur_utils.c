@@ -17,29 +17,6 @@
 struct rk_sema client_slot;
 
 
-//Pre : None
-//Post : Change la valeur de server_running à 0
-// Puis attend la fermeture de tous les threads et les sockets des clients
-void clean_logout_server(int serveur_socket);
-
-//pre : None
-//post : force la fermeture de tous les threads et les sockets des clients
-void force_logout_clients();
-
-
-
-//Pre :
-//Post : déconnecte tous les clients et ferme le serveur
-// Efface la liste des clients
-void clean_shutdown_server(int serveur_socket);
-
-void initialize_semaphore(void);
-
-void destroy_semaphore(void);
-
-// Retourne un pointeur vers le sémaphore client_slot
-struct rk_sema* get_client_slot(void);
-
 void force_logout_clients() {
 
     pthread_mutex_t *mutex = get_mutex_list();

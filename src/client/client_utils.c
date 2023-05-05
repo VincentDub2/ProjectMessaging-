@@ -3,11 +3,11 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdio.h>
 #include "../../include/client/client_utils.h"
 
 #include "../../include/common.h"
 
-#include <stdio.h>
 
 
 // Crée un socket et vérifie si la création a réussi
