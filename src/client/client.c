@@ -7,7 +7,8 @@
 #include "../../include/client/affichage_utils.h"
 #include "../../include/client/signal_utils.h"
 #include "../../include/client/client_utils.h"
-#include ".../../common.h"
+#include "../../include/client/client.h"
+#include "../../include/common.h"
 
 
 
