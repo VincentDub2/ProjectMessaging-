@@ -40,8 +40,11 @@ void disconnect_client(client_info *info);
 // Implémentez vos fonctions liées à la gestion des clients et de leurs threads ici
 
 void wait_for_clients(int server_socket) {
-    int client_count = 0;
 
+    // Ajouter le compte serveur à la liste des clients
+    add_serveur_account();
+
+    int client_count = 1;
 
     // Initialiser le sémaphore
     initialize_semaphore();
@@ -100,7 +103,7 @@ void *handle_client(void *arg) {
     int client_socket = info->socket_fd;
     int client_index = info->index;
 
-    printf("Client connecté : %d\n", client_socket);
+    printf("Client %d choisi un pseudo \n", client_index);
 
     int pseudo_set = 0; // Indique si le pseudo du client a été défini
 
@@ -128,6 +131,8 @@ void *handle_client(void *arg) {
 
     info->pseudo = strdup(pseudo_buffer);
 
+    // Envoie du message "x a rejoint le chat" à tous les clients
+    send_welcome_message_to_clients(info->pseudo);
 
     // Configurer le socket en mode non bloquant
     int flags = fcntl(client_socket, F_GETFL, 0);
@@ -146,7 +151,7 @@ void *handle_client(void *arg) {
     char buffer[BUFFER_SIZE];
     int bytes_received;
 
-    printf("Client %d connecté\n", client_index + 1);
+    printf("Client %d est connecté\n", client_index);
 
     while (get_server_running()) {
 
@@ -170,32 +175,65 @@ void *handle_client(void *arg) {
             break;
         }
 
-        // Si le client envoie la commande "/quit", déconnectez-le
-        if (strcmp(buffer, "/quit") == 0) {
-            break;
+        // Gestion des commandes
+        if (buffer[0] == '/'){
+            // Extraire la commande
+            char *commande = strtok(buffer, " ");
+            commande++; // Ignorer le caractère '/' dans la commande
+            // Traiter la commande
+            if (strcmp(commande, "list") == 0) {
+                send_client_list(pseudo_buffer);
+
+            }
+            else if (strcmp(commande, "quit") == 0) {
+                // Déconnecter le client
+                break;
+            }
+            else if (strcmp(commande, "help") == 0){
+                send_manual(pseudo_buffer);
+            }
+            else if (strcmp(commande, "mp") == 0){
+                //Message privé
+                //Extraire le pseudo et le message
+                char *pseudo = strtok(NULL, " ");
+                char *message = strtok(NULL, "");
+
+                // Vérifier que le pseudo et le message sont valides
+                if (pseudo != NULL && message != NULL) {
+                    // Envoyer le message privé
+                    mp_client(info->index, pseudo, message);
+                } else {
+                    // Envoyer un message d'erreur au client
+                    mp_client(0, info->pseudo, "Format de commande invalide pour MP");
+                }
+            }
+            // Gestion des tags
+            else {
+                // Envoyer un message d'erreur au client
+                mp_client(0, info->pseudo, "Commande inconnue");
+            }
         }
+        else if (strstr(buffer, "@")) {
+            // Trouver la position de l'arobase
+            char *at_position = strchr(buffer, '@');
 
-        // Gérez les autres commandes et messages ici
-        // Créer des fonctions pour chaque commande
+            // Extraire le pseudo qui suit l'arobase
+            char pseudo[MAX_PSEUDO_LENGTH + 1]; // +1 pour le caractère de fin de chaîne
+            int extracted_length = 0;
+            sscanf(at_position + 1, "%s%n", pseudo, &extracted_length);
 
-
-
-        if (strncmp(buffer, "/mp ", 4) == 0) {
-            // Divise la chaîne en tokens séparés par un espace
-            char *token = strtok(buffer + 4, " ");
-
-            // Le premier token correspond au pseudo
-            char *pseudo = token;
-
-            // Le deuxième token correspond au message
-            char *msg = strtok(NULL, "");
-
-            // Affiche le pseudo et le message
-            printf("Message privé pour %s : %s\n", pseudo, msg);
-
-            // Envoie le message privé au client
-
-            mp_client(client_index,pseudo, msg);
+            // Vérifie la longueur du pseudo extrait
+            if (extracted_length <= MAX_PSEUDO_LENGTH) {
+                // Traite le message avec le pseudo extrait
+                char message[BUFFER_SIZE];
+                sprintf(message, "%s%s", info->pseudo, " vous a tagué ");
+                send_message_to_all_clients(client_index, buffer);
+                mp_client(0,pseudo, message);
+            }
+            else {
+                // Envoyer un message d'erreur au client
+                mp_client(0, info->pseudo, "Pseudo trop long");
+            }
 
         }
         else {
@@ -207,6 +245,8 @@ void *handle_client(void *arg) {
     //déconnexion du client
     // Fermer le socket et retirer le client de la liste chaînée
 
+    send_disconnect_message_to_clients(info->pseudo);
+
     disconnect_client(info);
 }
 
@@ -216,7 +256,7 @@ void disconnect_client(client_info *info) {
     int client_socket = info->socket_fd;
     int client_index = info->index;
 
-    printf("En cours de déconnexion du client %d\n", client_index + 1);
+    printf("En cours de déconnexion du client %d\n", client_index);
 
     // Fermer le socket et retirer le client de la liste chaînée
     close(client_socket);
@@ -225,7 +265,7 @@ void disconnect_client(client_info *info) {
     remove_client_from_list(client_index);
 
 
-    printf("Client %d déconnecté\n", client_index + 1);
+    printf("Client %d déconnecté\n", client_index);
 
     // Lorsque le client se déconnecte, libérer le slot
     rk_sema_post(get_client_slot());

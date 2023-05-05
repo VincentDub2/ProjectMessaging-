@@ -30,9 +30,44 @@ void display_message(const char *message_received) {
 
     // Efface la ligne actuelle
     printf("\033[2K\r");
-
     // Affiche le message formaté avec le pseudo, l'heure et le message
     printf("[%s] %s: %s\n", time_buffer, username, message);
+
+    // Réaffiche la saisie de l'utilisateur
+    printf("Entrez votre message: ");
+    fflush(stdout);
+}
+
+void display_sent_message(const char *pseudo, const char *message) {
+    time_t rawtime;
+    struct tm *timeinfo;
+    char time_buffer[9]; // Format HH:MM:SS\0
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(time_buffer, 9, "%H:%M:%S", timeinfo);
+
+
+    // Remonte d'une ligne
+    printf("\033[1A");
+
+    // Efface la ligne actuelle
+    printf("\033[2K\r");
+
+    // Affiche le message formaté avec le pseudo, l'heure et le message
+    printf("[%s] %s: %s\n", time_buffer, pseudo, message);
+
+    // Réaffiche la saisie de l'utilisateur
+    printf("Entrez votre message: ");
+    fflush(stdout);
+}
+
+void display_welcome_message(const char *message) {
+    // Efface la ligne actuelle
+    printf("\033[2K\r");
+
+    // Affiche le message formaté avec le pseudo, l'heure et le message
+    printf("%s \n",message);
 
     // Réaffiche la saisie de l'utilisateur
     printf("Entrez votre message: ");

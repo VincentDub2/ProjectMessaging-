@@ -9,7 +9,7 @@ void shutdown_client_list(void);
 
 client_info* get_head_list(void);
 pthread_mutex_t* get_mutex_list(void);
-client_info* get_client_by_pseudo(char* pseudo);
+client_info* get_client_by_pseudo(const char* pseudo);
 client_info* get_client_by_index(int client_index);
 int is_pseudo_available(char *pseudo);
 
@@ -105,7 +105,7 @@ client_info* get_client_by_index(int client_index) {
     return client;
 }
 
-client_info* get_client_by_pseudo(char* pseudo){
+client_info* get_client_by_pseudo(const char* pseudo){
 
     pthread_mutex_lock(&client_list_mutex);
 
@@ -139,11 +139,9 @@ int is_pseudo_available(char *pseudo) {
 
     pthread_mutex_lock(&client_list_mutex);
 
-    printf("Verrouillage mutex client_list_mutex\n");
 
     client_info *curr = client_list_head;
 
-    printf("Recuperation tete de liste \n");
 
     while (curr != NULL) {
         printf("Parcours de la liste des clients\n");
@@ -161,4 +159,14 @@ int is_pseudo_available(char *pseudo) {
     printf("Le pseudo %s est disponible.\n", pseudo);
 
     return 1; // Le pseudo est disponible
+}
+
+
+void add_serveur_account(){
+    client_info *serveur = malloc(sizeof(client_info));
+    serveur->pseudo = malloc(sizeof(char) * 8);
+    strcpy(serveur->pseudo, "Serveur");
+    serveur->index = 0;
+    serveur->next = NULL;
+    add_client_to_list(serveur);
 }

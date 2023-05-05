@@ -3,7 +3,9 @@
 #include "../../include/serveur/signal_utilis.h"
 #include "../../include/serveur/socket_utils.h"
 #include "../../include/serveur/communication_utils.h"
-#include "../include/serveur/common.h"
+
+#include "../../include/common.h"
+
 #include <sys/sem.h>
 
 #include <unistd.h>

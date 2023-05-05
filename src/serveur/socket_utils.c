@@ -41,7 +41,12 @@ int create_server_socket(struct sockaddr_in *server_addr, int port) {
 }
 
 void shutdown_server(int server_socket) {
-    close(server_socket);
+
+    if (close(server_socket)==-1){
+        perror("Erreur lors de la fermeture du socket");
+        exit(EXIT_FAILURE);
+    }
+
     printf("Serveur correctement arrêté\n");
 }
 

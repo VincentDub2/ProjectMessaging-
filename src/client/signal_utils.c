@@ -29,7 +29,6 @@ int get_client_running(void) {
 
 void set_client_running(int value) {
     client_running = value;
-    printf("client_running = %d\n", client_running);
 }
 
 void sigint_handler(int signum) {

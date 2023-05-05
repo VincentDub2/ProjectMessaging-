@@ -33,8 +33,14 @@ int main() {
 
     // Demande le pseudo du client
 
-    char pseudo = ask_for_pseudo(socket_fd);
+    char* pseudo = ask_for_pseudo(socket_fd);
 
+    printf("Bienvenue %s ! Vous avez rejoint la conversation.\n", pseudo);
+    printf("Pour quitter le chat, tapez Ctrl+C ou /quit\n");
+    printf("-------------------------------------------\n");
+
+    printf("Entrez votre message: ");
+    fflush(stdout);
 
     pthread_t send_thread, receive_thread;
 
@@ -83,8 +89,6 @@ void *send_messages(void *arg) {
 
         if (select_result > 0 && FD_ISSET(STDIN_FILENO, &read_fds)) {
 
-            printf("Entrez votre message: ");
-
             fgets(buffer, BUFFER_SIZE, stdin);
 
             buffer[strcspn(buffer, "\n")] = '\0';
@@ -92,14 +96,16 @@ void *send_messages(void *arg) {
             // Vérifie si la longueur du message est inférieure à la longueur maximale autorisée
             if (strlen(buffer) > MAX_MESSAGE_LENGTH) {
                 printf("Message trop long. Veuillez entrer un message de %d caractères maximum.\n", MAX_MESSAGE_LENGTH);
-            } else {
+            }
+            else
+            {
                 send(socket_fd, buffer, strlen(buffer), 0);
-
                 // Si le message est "fin", sortir de la boucle
-                if (strcmp(buffer, "fin") == 0) {
+                if (strcmp(buffer, "/quit") == 0) {
                     set_client_running(0);
                 }
             }
+            display_sent_message("me", buffer);
         } else if (select_result == -1) {
             perror("Erreur lors de l'appel à select()");
             set_client_running(0);
@@ -175,7 +181,11 @@ void *receive_messages(void *arg) {
 
             // Affiche le message reçu
             else {
-                display_message(buffer);
+                if (is_message_from_server(buffer)==1) {
+                    display_welcome_message(buffer);
+                } else {
+                    display_message(buffer);
+                }
             }
 
         }

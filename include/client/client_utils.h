@@ -17,6 +17,10 @@ char* ask_for_pseudo(int socket_fd);
 // pre : socket_fd valide
 // post : demande un pseudo au client
 // et le retourne si il est valide
-//
+
+int is_message_from_server(const char *message);
+// pre : message valide
+// post : retourne 1 si le message est un message du serveur,
+// sinon retourne 0
 
 #endif //CLIENT_UTILS_H

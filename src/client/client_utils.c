@@ -40,7 +40,7 @@ void connect_to_server(int socket_fd, char *ip, int port) {
 int is_valid_pseudo(const char* pseudo) {
     size_t length = strlen(pseudo);
 
-    if (length == 0 || length > MAX_PSEUDO_LENGTH) {
+    if (length == 0 || length > MAX_PSEUDO_LENGTH || strcmp(pseudo, "Serveur") == 0) {
         return 0;
     }
 
@@ -85,4 +85,10 @@ char* ask_for_pseudo(int socket_fd) {
     }
 
     return buffer;
+}
+
+int is_message_from_server(const char *message) {
+    const char *server_prefix = "Serveur:";
+    int res = strncmp(message, server_prefix, strlen(server_prefix)) == 0;
+    return res;
 }

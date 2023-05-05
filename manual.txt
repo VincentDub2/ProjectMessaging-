@@ -1,0 +1,24 @@
+------------------------------------------
+    Manuel d'utilisation du chat client
+------------------------------------------
+
+Commandes disponibles :
+
+/list
+  Affiche la liste des clients connectés au serveur.
+
+/quit
+  Déconnecte le client du serveur et ferme l'application.
+
+/help
+  Affiche ce manuel d'utilisation.
+
+/mp <pseudo> <message>
+  Envoie un message privé au client spécifié par <pseudo>.
+  Exemple : /mp vincent Salut Vincent, comment ça va ?
+
+@<pseudo>
+  Mentionne un client spécifié par <pseudo> dans un message public.
+  Exemple : Salut @vincent, as-tu vu mon dernier message ?
+
+------------------------------------------

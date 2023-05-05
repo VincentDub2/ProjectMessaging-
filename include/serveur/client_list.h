@@ -33,7 +33,7 @@ pthread_mutex_t* get_mutex_list(void);
 // pre : -
 // post : retourne le mutex de la liste des clients
 
-client_info* get_client_by_pseudo(char* pseudo);
+client_info* get_client_by_pseudo(const char* pseudo);
 // pre : pseudo valide
 // post : retourne le client dont le pseudo est pseudo
 
@@ -44,6 +44,11 @@ client_info* get_client_by_index(int client_index);
 int is_pseudo_available(char *pseudo);
 // pre : pseudo valide
 // post : retourne 1 si le pseudo est disponible, 0 sinon
+
+
+void add_serveur_account(void);
+// pre : -
+// post : ajoute le compte serveur à la liste des clients
 
 
 #endif
