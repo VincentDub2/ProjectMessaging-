@@ -100,6 +100,8 @@ void *handle_client(void *arg) {
     int client_socket = info->socket_fd;
     int client_index = info->index;
 
+    printf("Client connecté : %d\n", client_socket);
+
     int pseudo_set = 0; // Indique si le pseudo du client a été défini
 
     char pseudo_buffer[MAX_PSEUDO_LENGTH + 1];
@@ -114,10 +116,12 @@ void *handle_client(void *arg) {
 
         // Vérifier si le pseudo est disponible
         if (is_pseudo_available(pseudo_buffer)) {
-            send(client_socket, "PSEUDO_OK", 9, 0); // Envoie "PSEUDO_OK" si le pseudo est disponible
+            send(client_socket, "PSEUDO_OK", BUFFER_SIZE, 0); // Envoie "PSEUDO_OK" si le pseudo est disponible
+            printf("envoie de pseudo_ok\n");
             pseudo_set = 1;
         } else {
-            send(client_socket, "PSEUDO_TAKEN", 12, 0); // Envoie "PSEUDO_TAKEN" si le pseudo est déjà pris
+            send(client_socket, "PSEUDO_TAKEN", BUFFER_SIZE, 0); // Envoie "PSEUDO_TAKEN" si le pseudo est déjà pris
+            printf("envoie de pseudo_taken\n");
             continue; // Passe à la prochaine itération pour attendre un nouveau client
         }
     }

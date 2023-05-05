@@ -76,6 +76,7 @@ char* ask_for_pseudo(int socket_fd) {
             }
             else {
                 printf("Erreur inattendue avec le serveur.\n");
+                printf("Réponse du serveur : %s\n", server_response);
                 exit(EXIT_FAILURE);
             }
         } else {

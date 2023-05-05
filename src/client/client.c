@@ -33,7 +33,7 @@ int main() {
 
     // Demande le pseudo du client
 
-    void *pseudo = ask_for_pseudo(socket_fd);
+    char pseudo = ask_for_pseudo(socket_fd);
 
 
     pthread_t send_thread, receive_thread;
