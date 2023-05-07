@@ -154,9 +154,9 @@ void *handle_client(void *arg) {
         }
 
 
-        // Si la réception échoue ou si le message est "fin", sortir de la boucle
+        // Si la réception échoue sortir de la boucle
         if (bytes_received == 0) {
-            printf("Erreur de connection");
+            printf("Erreur de connection avec le client %d \n", client_index);
             break;
         }
 
@@ -207,6 +207,20 @@ void *handle_client(void *arg) {
             int extracted_length = 0;
             sscanf(at_position + 1, "%s%n", pseudo, &extracted_length);
 
+            // Vérifier si le pseudo extrait est valide
+            if (extracted_length == 0) {
+                // Envoyer un message d'erreur au client
+                mp_client(0, info->pseudo, "Format de commande invalide pour tag");
+                continue;
+            }
+
+            //Verifier si le pseudo existe
+            if (is_pseudo_available(pseudo)==1) {
+                // Envoyer un message d'erreur au client
+                mp_client(0, info->pseudo, "Aucun client avec ce pseudo");
+                continue;
+            }
+
             // Vérifie la longueur du pseudo extrait
             if (extracted_length <= MAX_PSEUDO_LENGTH) {
                 // Traite le message avec le pseudo extrait
@@ -216,6 +230,7 @@ void *handle_client(void *arg) {
                 mp_client(0,pseudo, message);
             }
             else {
+                printf("Pseudo trop long\n");
                 // Envoyer un message d'erreur au client
                 mp_client(0, info->pseudo, "Pseudo trop long");
             }
@@ -228,8 +243,8 @@ void *handle_client(void *arg) {
     }
 
     //déconnexion du client
-    // Fermer le socket et retirer le client de la liste chaînée
 
+    // Envoyer le message de déconnexion à tous les clients
     send_disconnect_message_to_clients(info->pseudo);
 
     disconnect_client(info);

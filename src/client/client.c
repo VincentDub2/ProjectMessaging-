@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <pthread.h>
-
+#include <stdlib.h>
 #include "../../include/client/affichage_utils.h"
 #include "../../include/client/signal_utils.h"
 #include "../../include/client/client_utils.h"
@@ -24,9 +24,24 @@ int main() {
     connect_to_server(socket_fd, SERVER_IP, PORT);
     printf("Connecté au serveur\n");
 
-    // Demande le pseudo du client
+    printf("Bienvenue sur le chat ! Pas de spam | Pas d'insulte.\n");
 
+    // Demande le pseudo du client
     char* pseudo = ask_for_pseudo(socket_fd);
+
+    if (pseudo == NULL) {
+        printf("Erreur lors de la demande du pseudo\n");
+        close(socket_fd);
+        free(pseudo);
+        exit(EXIT_FAILURE);
+    }
+
+    if (get_client_running() == 0) {
+        printf("Client fermé\n");
+        close(socket_fd);
+        free(pseudo);
+        exit(EXIT_FAILURE);
+    }
 
     printf("Bienvenue %s ! Vous avez rejoint la conversation.\n", pseudo);
     printf("Pour quitter le chat, tapez Ctrl+C ou /quit\n");
@@ -49,6 +64,7 @@ int main() {
 
     // Ferme le socket
     close(socket_fd);
+    free(pseudo);
 
     printf("\r Fin de connection\n");
     return 0;
@@ -93,7 +109,6 @@ void *send_messages(void *arg) {
             else
             {
                 send(socket_fd, buffer, strlen(buffer), 0);
-                // Si le message est "fin", sortir de la boucle
                 if (strcmp(buffer, "/quit") == 0) {
                     set_client_running(0);
                 }
@@ -145,6 +160,7 @@ void *receive_messages(void *arg) {
         //NULL comme on ne surveille pas les descripteurs de fichiers pour les exceptions
         //&timeout : Si aucun descripteur n'est prêt pour l'opération spécifiée avant l'expiration du délai,
         //select() retournera &timeout.
+
         int select_result = select(socket_fd + 1, &read_fds, NULL, NULL, &timeout);
 
         //Si select_result est négatif, il y a eu une erreur
@@ -166,19 +182,43 @@ void *receive_messages(void *arg) {
                 set_client_running(0);
             }
 
-            // Si le message est "/fin", sortir de la boucle
-            if (strcmp(buffer, "/fin") == 0) {
-                printf("Vous venez d'etre déconnecté par le serveur\n");
-                set_client_running(0);
-            }
+            // Gestion des commandes envoyées par le serveur
+            // Un utilisateur ne peut pas envoyer des /commandes
 
+            if (is_message_from_server(buffer) == 1) {
+
+                // Vérifier si un slash est présent au début
+                if (buffer[9] == '/') {
+                      // Récupérer la commande
+                    char buffer_copy[BUFFER_SIZE];
+                    strncpy(buffer_copy, buffer, BUFFER_SIZE - 1);
+                    buffer_copy[BUFFER_SIZE - 1] = '\0';
+
+                    char *first_element = strtok(buffer_copy, " ");
+                    char *second_element = strtok(NULL, " ");
+                    char *rest = strtok(NULL, "");
+
+                    printf("Commande reçue du serveur : %s\n", second_element);
+                    second_element++;
+
+
+                    // Traiter la commande
+                    if (strcmp(second_element, "list") == 0) {
+                        display_client_list(rest);
+                    } else if (strcmp(second_element, "fin") == 0) {
+                        printf("Le serveur a été arrêté\n");
+                        set_client_running(0);
+                    } else {
+                        printf("Commande inconnue du serveur\n");
+                    }
+                } else {
+                    // Afficher le message reçu
+                    display_welcome_message(buffer);
+                }
+            }
             // Affiche le message reçu
             else {
-                if (is_message_from_server(buffer)==1) {
-                    display_welcome_message(buffer);
-                } else {
-                    display_message(buffer);
-                }
+                 display_message(buffer);
             }
 
         }

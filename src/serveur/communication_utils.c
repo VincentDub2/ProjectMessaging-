@@ -10,7 +10,7 @@
 
 void send_fin(){
     char message[100];
-    sprintf(message, "/fin");
+    sprintf(message, "Serveur: /fin");
 
     pthread_mutex_t* mutex = get_mutex_list();
     // On verrouille l'accès à la liste des clients
@@ -56,13 +56,13 @@ void mp_client(int sender_index,const char* pseudo, const char* message) {
         client_info *sender = get_client_by_index(sender_index);
 
         if (send(sender->socket_fd, error_msg, strlen(error_msg), 0) == -1) {
-            perror("Erreur lors de l'envoi du message d'erreur");
+            perror("Mp client : Erreur lors de l'envoi du message d'erreur");
         }
     }
 
     else {
         if (send(recipient->socket_fd, message_with_pseudo, strlen(message_with_pseudo), 0) == -1) {
-            perror("Erreur lors de l'envoi du message");
+            perror("Mp client : Erreur lors de l'envoi du message");
         }
 
     }
@@ -97,9 +97,9 @@ void send_message_to_all_clients(int sender_index, const char* message) {
     // On parcourt la liste des clients et on envoie le message à tous les clients
     client_info *curr = get_head_list();
     while (curr != NULL) {
-        if (curr->index != sender_index && curr->pseudo!=NULL) {
+        if (curr->index != sender_index && curr->pseudo!=NULL && curr->socket_fd!=0) {
             if (send(curr->socket_fd, message_with_pseudo, strlen(message_with_pseudo), 0) == -1) {
-                perror("Erreur lors de l'envoi du message");
+                perror("Send all : Erreur lors de l'envoi du message");
             }
         }
         curr = curr->next;
@@ -129,7 +129,7 @@ void send_client_list(const char * pseudo) {
     // Parcourir la liste des clients et construire la chaîne de caractères pour la liste
     char client_list[BUFFER_SIZE];
     memset(client_list, 0, BUFFER_SIZE);
-    strcat(client_list, "LIST");
+    strcat(client_list, "/list");
     client_info *current = get_head_list();
     while (current != NULL) {
         // Ignorer le compte Serveur
@@ -158,7 +158,8 @@ void send_manual(const char *pseudo) {
 
     char buffer[BUFFER_SIZE];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        mp_client(0, pseudo, buffer);
+        mp_client(0, pseudo, buffer); // On envoie la ligne au client
+        //On utilise mp_client pour envoyer le message au client
     }
     fclose(file);
 }
