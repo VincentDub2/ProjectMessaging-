@@ -182,8 +182,7 @@ void *receive_messages(void *arg) {
                 set_client_running(0);
             }
 
-            // Gestion des commandes envoyées par le serveur
-            // Un utilisateur ne peut pas envoyer des /commandes
+            // Gestion des données envoyées par le serveur
 
             if (is_message_from_server(buffer) == 1) {
 
@@ -194,7 +193,7 @@ void *receive_messages(void *arg) {
                     strncpy(buffer_copy, buffer, BUFFER_SIZE - 1);
                     buffer_copy[BUFFER_SIZE - 1] = '\0';
 
-                    char *first_element = strtok(buffer_copy, " ");
+                    char *first_element = strtok(buffer_copy, " "); // Ne sert a rien ici
                     char *second_element = strtok(NULL, " ");
                     char *rest = strtok(NULL, "");
 

@@ -66,12 +66,6 @@ void mp_client(int sender_index,const char* pseudo, const char* message) {
         }
 
     }
-
-
-
-    // Si le destinataire n'est pas trouvé, on envoie un message d'erreur au client qui a envoyé la commande
-
-
 }
 
 
