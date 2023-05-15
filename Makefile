@@ -3,8 +3,8 @@ CFLAGS = -Wall -Wextra -Iinclude
 LDFLAGS =
 
 # Fichiers sources
-CLIENT_SRC = $(wildcard src/client/*.c)
-SERVEUR_SRC = $(wildcard src/serveur/*.c src/serveur/*/*.c)
+CLIENT_SRC = $(wildcard src/client/*.c src/*.c)
+SERVEUR_SRC = $(wildcard src/serveur/*.c src/*.c)
 
 # Fichiers objets
 CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
@@ -23,10 +23,10 @@ $(SERVEUR_EXEC): $(SERVEUR_OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	$(CC) -o  $@ -c $< $(CFLAGS)
 
 clean:
-	rm -f src/client/*.o src/serveur/*.o
+	rm -f src/client/*.o src/serveur/*.o src/*.o
 
 mrproper: clean
 	rm -f $(CLIENT_EXEC) $(SERVEUR_EXEC)

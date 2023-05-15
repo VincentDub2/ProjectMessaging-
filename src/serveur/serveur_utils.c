@@ -60,12 +60,12 @@ void clean_logout_clients(){
 
 // Fonction pour arrêter le serveur
 // On ferme toutes les connexions et on libère la mémoire
-void clean_shutdown_server(int serveur_socket) {
+void clean_shutdown_server(int serveur_socket_message,int serveur_socket_file) {
     clean_logout_clients();
 
     shutdown_client_list();
 
-    shutdown_server(serveur_socket);
+    shutdown_server(serveur_socket_message,serveur_socket_file);
 
     destroy_semaphore();
 

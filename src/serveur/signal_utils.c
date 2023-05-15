@@ -11,9 +11,12 @@
 
 
 volatile sig_atomic_t server_running = 1; // Variable pour indiquer si le serveur est en cours d'exécution
-int server_socket;
+
+int server_socket_msg;
+int server_socket_file;
 
 int get_server_running(void) {
+    //Mettre un mutex ici
     return server_running;
 }
 
@@ -25,14 +28,15 @@ void sigint_handler(int signum) {
     // Indiquer que le serveur doit s'arrêter
     server_running = 0;
 
-    clean_shutdown_server(server_socket);
+    clean_shutdown_server(server_socket_msg, server_socket_file);
 
     // Terminer le programme
     exit(0);
 }
 
-void setup_sigint_handler(int socket) {
-    server_socket = socket;
+void setup_sigint_handler(int socket_msg, int socket_file) {
+    server_socket_msg = socket_msg;
+    server_socket_file = socket_file;
     struct sigaction sigint_action;
     memset(&sigint_action, 0, sizeof(sigint_action));
     sigint_action.sa_handler = sigint_handler;

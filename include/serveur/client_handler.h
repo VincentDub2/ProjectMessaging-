@@ -1,10 +1,16 @@
 #ifndef CLIENT_HANDLER_H
 #define CLIENT_HANDLER_H
 
-#include <pthread.h>
-#include "client_list.h"
+#include "../serveur/client_list.h"
 
-void wait_for_clients(int server_socket);
+//Arguments pour le thread
+typedef struct {
+    int server_socket_message;
+    int server_socket_file;
+    client_info *info;
+} thread_args;
+
+void wait_for_clients(int server_socket_message, int server_socket_file);
 //pre : socket du serveur crée
 //post : attend les clients et les ajoute à la liste des clients
 //      crée un thread pour chaque client

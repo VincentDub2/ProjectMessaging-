@@ -157,3 +157,17 @@ void send_manual(const char *pseudo) {
     }
     fclose(file);
 }
+
+
+
+void send_file_list(char *file_list[],const char *pseudo) {
+
+    // Affichez la liste des fichiers disponibles
+    for(int i = 0; i < MAX_FILES_LIST; i++) {
+        if(file_list[i] != NULL) {
+            char buffer[BUFFER_SIZE];
+            sprintf(buffer, "%d: %s\n", i, file_list[i]);
+            mp_client(0, pseudo, buffer);
+        }
+    }
+}

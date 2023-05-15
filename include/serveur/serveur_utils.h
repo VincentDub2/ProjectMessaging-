@@ -12,7 +12,7 @@ void clean_logout_clients();
 //post : déconnecte proprement tous les clients
 // et attend que tous les threads soit terminés
 
-void clean_shutdown_server(int serveur_socket);
+void clean_shutdown_server(int serveur_socket_message,int serveur_socket_file);
 // pre : serveur_socket valide
 // post : appelle clean_logout_clients
 // libère le sémaphore client_slot

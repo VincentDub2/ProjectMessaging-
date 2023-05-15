@@ -1,30 +1,36 @@
+#include "../include/serveur/client_handler.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <pthread.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-#include "../../include/serveur/rk_sema.h"
-
-#include "../../include/serveur/client_handler.h"
-
-#include "../../include/serveur/signal_utilis.h"
 
 #include "../../include/serveur/communication_utils.h"
 
+#include "../../include/serveur/rk_sema.h"
+
+#include "../include/common.h"
+
+#include "../include/serveur/handle_pseudo.h"
+
+#include "../../include/serveur/handle_file_reception.h"
 
 #include "../../include/serveur/serveur_utils.h"
 
-#include "../../include/common.h" // Permet de définir des constantes pour plusieurs fichiers
+#include "../../include/serveur/handle_file_send.h"
 
-//Ici on va utiliser BUFFER_SIZE
+#include "../../include/serveur/signal_utilis.h"
 
+#include "../../include/serveur/socket_utils.h"
 
-void wait_for_clients(int server_socket) {
+#include "../../include/serveur/client_list.h"
+
+void wait_for_clients(int server_socket_message, int server_socket_file) {
 
     // Ajouter le compte serveur à la liste des clients
     add_serveur_account();
@@ -45,15 +51,19 @@ void wait_for_clients(int server_socket) {
         socklen_t client_addr_size = sizeof(client_addr); //taille de l'adresse du client
 
         // Accepter la connexion entrante
-        int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_size);
+        int client_socket = accept(server_socket_message, (struct sockaddr *)&client_addr, &client_addr_size);
         //Gestion d'erreur
         if (client_socket == -1) {
             perror("Erreur lors de l'acceptation de la connexion entrante");
             continue; //On signale l'erreur et on continue l'écoute
         }
 
-        // Créer un nouveau client_info et l'ajouter à la liste chaînée
         client_info *info = malloc(sizeof(client_info));
+
+        if (info == NULL) {
+            perror("Erreur lors de l'allocation de mémoire pour info");
+            exit(EXIT_FAILURE);
+        }
 
         if (info== NULL) {
             perror("Erreur lors de l'allocation de mémoire");
@@ -70,11 +80,17 @@ void wait_for_clients(int server_socket) {
 
         add_client_to_list(info);
 
-        // Créer un thread pour gérer le client
-        if (pthread_create(&thread_id, NULL, handle_client, (void *)info)!=0) {
+        thread_args *args = malloc(sizeof(thread_args));
+        args->server_socket_message = server_socket_message;
+        args->server_socket_file = server_socket_file;
+        args->info = info;
+
+        // Passer la structure args à pthread_create
+        if (pthread_create(&thread_id, NULL, handle_client, args) != 0) {
             perror("Erreur lors de la création du thread");
             close(client_socket);
             remove_client_from_list(info->index);
+            free(args); // N'oubliez pas de libérer la mémoire si la création du thread échoue
             continue;
         }
     }
@@ -82,39 +98,24 @@ void wait_for_clients(int server_socket) {
 
 
 void *handle_client(void *arg) {
-    // Récupéré les informations du client
-    client_info *info = (client_info *) arg;
+
+    thread_args *args = (thread_args *) arg;
+
+    int server_socket_message = args->server_socket_message; // PAS UTILISER POUR L'INSTANT
+    int server_socket_file = args->server_socket_file;
+    client_info *info = args->info;
+
 
     int client_socket = info->socket_fd;
     int client_index = info->index;
 
     printf("Client %d choisi un pseudo \n", client_index);
 
-    int pseudo_set = 0; // Indique si le pseudo du client a été défini
+    char pseudo_buffer[MAX_PSEUDO_LENGTH + 1]; // +1 pour le caractère de fin de chaîne
 
-    char pseudo_buffer[MAX_PSEUDO_LENGTH + 1];
+    receive_pseudo_from_client(pseudo_buffer, client_socket);
 
-    while (!pseudo_set){
-
-        memset(pseudo_buffer, 0, MAX_PSEUDO_LENGTH + 1);
-
-        recv(client_socket, pseudo_buffer, MAX_PSEUDO_LENGTH + 1, 0);
-
-        printf("Pseudo reçu : %s\n", pseudo_buffer);
-
-        // Vérifier si le pseudo est disponible
-        if (is_pseudo_available(pseudo_buffer)) {
-            send(client_socket, "PSEUDO_OK", BUFFER_SIZE, 0); // Envoie "PSEUDO_OK" si le pseudo est disponible
-            printf("envoie de pseudo_ok\n");
-            pseudo_set = 1;
-        } else {
-            send(client_socket, "PSEUDO_TAKEN", BUFFER_SIZE, 0); // Envoie "PSEUDO_TAKEN" si le pseudo est déjà pris
-            printf("envoie de pseudo_taken\n");
-            continue; // Passe à la prochaine itération pour attendre un nouveau client
-        }
-    }
-
-    info->pseudo = strdup(pseudo_buffer);
+    info->pseudo = strdup(pseudo_buffer); // Copier le pseudo dans la structure client_info
 
     // Envoie du message "x a rejoint le chat" à tous les clients
     send_welcome_message_to_clients(info->pseudo);
@@ -150,7 +151,8 @@ void *handle_client(void *arg) {
         // Cela signifie qu'il n'y a pas de données à lire
         if (bytes_received == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             usleep(200000); // Attendre 200 ms pour éviter une utilisation élevée du processeur
-            continue;
+
+            continue; // Permet de passer directement à la prochaine itération de la boucle
         }
 
 
@@ -170,6 +172,14 @@ void *handle_client(void *arg) {
                 send_client_list(pseudo_buffer);
 
             }
+            else if(strcmp(commande,"sendFiles")==0) {
+                handle_file_reception_command(server_socket_file);
+            }
+            else if (strcmp(commande, "getFiles")==0){
+                printf("getFiles");
+                handle_get_files_commande(client_socket,pseudo_buffer,server_socket_file);
+            }
+
             else if (strcmp(commande, "quit") == 0) {
                 // Déconnecter le client
                 break;
@@ -247,6 +257,7 @@ void *handle_client(void *arg) {
     // Envoyer le message de déconnexion à tous les clients
     send_disconnect_message_to_clients(info->pseudo);
 
+    free(args);
     disconnect_client(info);
 }
 

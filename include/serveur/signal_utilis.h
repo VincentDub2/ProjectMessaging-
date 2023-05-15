@@ -16,7 +16,7 @@ void set_server_running(int value);
 // pre : value = 0 ou 1
 // post : modifie la valeur de server_running
 
-void setup_sigint_handler(int server_socket);
+void setup_sigint_handler(int server_socket_message, int server_socket_file);
 //pre : server_socket valide
 // post : met en place le handler pour SIGINT
 // et ferme le serveur en cas de SIGINT

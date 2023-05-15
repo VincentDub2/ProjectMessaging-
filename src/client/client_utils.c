@@ -4,9 +4,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/select.h> // Pour select(), FD_SET(), FD_ZERO()
-
+#include <pthread.h>
 #include "../../include/client/client_utils.h"
 #include "../../include/client/signal_utils.h"
 
@@ -34,8 +32,11 @@ void connect_to_server(int socket_fd, char *ip, int port) {
     server_addr.sin_addr.s_addr = inet_addr(ip);
     server_addr.sin_port = htons(port);
 
+
+
     if (connect(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Erreur de connexion au serveur");
+        printf("Erreur de connexion au serveur avec le port spécifié %d et l'adresse IP spécifiée %s \n", port, ip);
+        perror("Info  ");
         exit(EXIT_FAILURE);
     }
 }

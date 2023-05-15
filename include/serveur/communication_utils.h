@@ -29,4 +29,9 @@ void send_manual(const char *pseudo);
 //pre : pseudo valide / le fichier manuel.txt existe et se situe dans ressources/
 //post : envoie le manuel d'utilisation au client avec ce pseudo
 
+
+void send_file_list(char *file_list[],const char *pseudo);
+//pre : pseudo valide / file_list valide
+//post : envoie la liste des fichiers au client qui ont ce pseudo
+
 #endif // COMMUNICATION_UTILS_H
