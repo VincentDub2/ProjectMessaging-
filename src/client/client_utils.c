@@ -81,12 +81,12 @@ char *ask_for_pseudo(int socket_fd) {
             } else {
                 printf("Erreur inattendue avec le serveur.\n");
                 printf("Réponse du serveur : %s\n", server_response);
-                set_client_running(0);
+                break;
             }
         } else {
             printf("Le pseudo est invalide. Veuillez entrer un pseudo sans espaces et de maximum %d caractères.\n", MAX_PSEUDO_LENGTH);
         }
-    } while (!pseudo_accepted && get_client_running());
+    } while (!pseudo_accepted);
 
     return buffer;
 }

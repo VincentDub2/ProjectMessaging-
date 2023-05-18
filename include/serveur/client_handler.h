@@ -1,7 +1,7 @@
 #ifndef CLIENT_HANDLER_H
 #define CLIENT_HANDLER_H
 
-#include "../serveur/client_list.h"
+#include "serveur_utils/client_list.h"
 
 //Arguments pour le thread
 typedef struct {
@@ -10,20 +10,21 @@ typedef struct {
     client_info *info;
 } thread_args;
 
-void wait_for_clients(int server_socket_message, int server_socket_file);
-//pre : socket du serveur crée
-//post : attend les clients et les ajoute à la liste des clients
-//      crée un thread pour chaque client
-
+/**
+ * @brief Fonction exécutée par un thread pour gérer les interactions avec un client.
+ *
+ * @param arg Les arguments du thread.
+ * @return NULL.
+ */
 void *handle_client(void *arg);
-//pre : place disponible grace au semaphore
-//post : traite les messages du client
-//      si le client envoie /fin, le supprime de la liste des clients
-//    et appelle disconnect_client
 
+/**
+ * @brief Déconnecte un client en fermant son socket, le retirant de la liste des clients et libérant le slot.
+ *
+ * @param info Les informations sur le client à déconnecter.
+ * @return NULL.
+ */
 void disconnect_client(client_info *info);
-//pre : client_info valide
-//post : supprime le client de la liste des clients
-//   et ferme la connexion / le thread
+
 
 #endif // CLIENT_HANDLER_H

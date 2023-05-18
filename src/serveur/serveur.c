@@ -4,13 +4,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "../../include/serveur/socket_utils.h"
+#include "../../include/serveur/serveur_utils/socket_utils.h"
 
 #include "../../include/serveur/signal_utilis.h"
 
-#include "../../include/serveur/client_handler.h"
+#include "../../include/serveur/wait_for_client.h"
 
-#include "../../include/serveur/serveur_utils.h"
+#include "../../include/serveur/serveur_utils/serveur_utils.h"
 
 #include "../../include/common.h"
 

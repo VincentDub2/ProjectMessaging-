@@ -21,4 +21,15 @@ Commandes disponibles :
   Mentionne un client spécifié par <pseudo> dans un message public.
   Exemple : Salut @vincent, as-tu vu mon dernier message ?
 
+/sendFiles
+    Envoie un fichier au serveur.
+    Exemple : /sendFiles
+
+/getFiles
+    Récupère un fichier du serveur.
+    Exemple : /getFiles
+
+------------------------------------------
+    User manual of the client chat
+
 ------------------------------------------

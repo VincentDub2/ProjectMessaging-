@@ -57,48 +57,14 @@ void display_sent_message(const char *pseudo, const char *message) {
     printf("\033[2K\r");
 
     // Affiche le message formaté avec le pseudo, l'heure et le message
-    printf("[%s] %s: %s\n", time_buffer, pseudo, message);
+    printf("[%s] %s: %s", time_buffer, pseudo, message);
 
     // Réaffiche la saisie de l'utilisateur
     printf("Entrez votre message: ");
     fflush(stdout);
 }
 
-void display_welcome_message(const char *message) {
-    // Efface la ligne actuelle
-    printf("\033[2K\r");
 
-    // Affiche le message formaté avec le pseudo, l'heure et le message
-    printf("%s \n",message);
-
-    // Réaffiche la saisie de l'utilisateur
-    printf("Entrez votre message: ");
-    fflush(stdout);
-}
-
-void display_client_list(const char *rest) {
-    // Supprimer la ligne actuelle du terminal
-    printf("\033[A\033[2K");
-
-    printf("Liste des clients connectés :\n");
-    printf("-----------------------------\n");
-
-    // Copier le contenu de 'rest' dans un tampon temporaire
-    char buffer[BUFFER_SIZE];
-    strncpy(buffer, rest, BUFFER_SIZE - 1);
-    buffer[BUFFER_SIZE - 1] = '\0';
-
-    // Extraire les pseudos
-    char *pseudo = strtok(buffer, " ");
-    while (pseudo != NULL) {
-        printf("- %s\n", pseudo);
-        pseudo = strtok(NULL, " ");
-    }
-    printf("-----------------------------\n");
-    // Réaffiche la saisie de l'utilisateur
-    printf("Entrez votre message: ");
-    fflush(stdout);
-}
 
 
 

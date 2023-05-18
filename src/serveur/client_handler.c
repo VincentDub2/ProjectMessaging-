@@ -9,93 +9,33 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "../../include/serveur/serveur_utils/rk_sema.h"
 
-#include "../../include/serveur/communication_utils.h"
-
-#include "../../include/serveur/rk_sema.h"
+#include "../../include/serveur/serveur_utils/serveur_utils.h"
 
 #include "../include/common.h"
 
-#include "../include/serveur/handle_pseudo.h"
+#include "../include/serveur/serveur_utils/handle_pseudo.h"
 
-#include "../../include/serveur/handle_file_reception.h"
+#include "../../include/serveur/command_transfer_file/handle_file_reception.h"
 
-#include "../../include/serveur/serveur_utils.h"
+#include "../../include/serveur/command_transfer_file/handle_file_send.h"
 
-#include "../../include/serveur/handle_file_send.h"
+#include "../../include/serveur/serveur_utils/client_list.h"
 
-#include "../../include/serveur/signal_utilis.h"
+#include "../../include/serveur/serveur_annoucement/client_event.h"
 
-#include "../../include/serveur/socket_utils.h"
+#include "../../include/serveur/command_message/handle_mp_message.h"
 
-#include "../../include/serveur/client_list.h"
+#include "../../include/serveur/command_message/handle_all_message.h"
 
-void wait_for_clients(int server_socket_message, int server_socket_file) {
+#include "../../include/serveur/command_who_connected/handle_liste_user.h"
 
-    // Ajouter le compte serveur à la liste des clients
-    add_serveur_account();
+#include "../../include/serveur/serveur_communication/communication.h"
 
-    int client_count = 1;
+#include "../../include/serveur/command_help/handle_help.h"
 
-    // Initialiser le sémaphore
-    initialize_semaphore();
-
-    pthread_t thread_id; //Identifiant du thread
-
-    while (get_server_running()) {
-
-        // Avant d'accepter un nouveau client, attendre qu'un slot soit disponible
-        rk_sema_wait(get_client_slot());
-
-        struct sockaddr_in client_addr; //adresse du client
-        socklen_t client_addr_size = sizeof(client_addr); //taille de l'adresse du client
-
-        // Accepter la connexion entrante
-        int client_socket = accept(server_socket_message, (struct sockaddr *)&client_addr, &client_addr_size);
-        //Gestion d'erreur
-        if (client_socket == -1) {
-            perror("Erreur lors de l'acceptation de la connexion entrante");
-            continue; //On signale l'erreur et on continue l'écoute
-        }
-
-        client_info *info = malloc(sizeof(client_info));
-
-        if (info == NULL) {
-            perror("Erreur lors de l'allocation de mémoire pour info");
-            exit(EXIT_FAILURE);
-        }
-
-        if (info== NULL) {
-            perror("Erreur lors de l'allocation de mémoire");
-            close(client_socket);
-            continue; //On signale l'erreur et on continue l'écoute
-        }
-
-        //On remplit les champs de la structure Info pour le stocker dans la liste chaînée
-        info->socket_fd = client_socket;
-        info->index = client_count++;
-        info->next = NULL;
-        info->thread_id = thread_id;
-        info->pseudo = NULL;
-
-        add_client_to_list(info);
-
-        thread_args *args = malloc(sizeof(thread_args));
-        args->server_socket_message = server_socket_message;
-        args->server_socket_file = server_socket_file;
-        args->info = info;
-
-        // Passer la structure args à pthread_create
-        if (pthread_create(&thread_id, NULL, handle_client, args) != 0) {
-            perror("Erreur lors de la création du thread");
-            close(client_socket);
-            remove_client_from_list(info->index);
-            free(args); // N'oubliez pas de libérer la mémoire si la création du thread échoue
-            continue;
-        }
-    }
-}
-
+#include "../../include/serveur/handle_tag/handle_tag.h"
 
 void *handle_client(void *arg) {
 
@@ -118,28 +58,14 @@ void *handle_client(void *arg) {
     info->pseudo = strdup(pseudo_buffer); // Copier le pseudo dans la structure client_info
 
     // Envoie du message "x a rejoint le chat" à tous les clients
-    send_welcome_message_to_clients(info->pseudo);
-
-    // Configurer le socket en mode non bloquant
-    int flags = fcntl(client_socket, F_GETFL, 0);
-
-    if (flags == -1) {
-        perror("Erreur lors de l'obtention des flags du socket");
-        pthread_exit(NULL);
-    }
-
-    if (fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) == -1) {
-        perror("Erreur lors de la configuration du socket en mode non bloquant");
-        pthread_exit(NULL);
-    }
-
+    send_join_message_to_clients(pseudo_buffer);
 
     char buffer[BUFFER_SIZE];
     int bytes_received;
 
     printf("Client %d est connecté\n", client_index);
 
-    while (get_server_running()) {
+    while (1) {
 
         // Réinitialiser le tampon
         memset(buffer, 0, BUFFER_SIZE);
@@ -147,35 +73,34 @@ void *handle_client(void *arg) {
         // Recevoir un message du client
         bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
 
-        // Si recv() retourne -1 et que errno est EAGAIN ou EWOULDBLOCK, continuez la boucle
-        // Cela signifie qu'il n'y a pas de données à lire
-        if (bytes_received == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            usleep(200000); // Attendre 200 ms pour éviter une utilisation élevée du processeur
-
-            continue; // Permet de passer directement à la prochaine itération de la boucle
+        if (bytes_received == -1) {
+            perror("Erreur lors de la réception du message du client");
+            break;
         }
-
 
         // Si la réception échoue sortir de la boucle
         if (bytes_received == 0) {
             printf("Erreur de connection avec le client %d \n", client_index);
             break;
         }
+        printf("Client %d : %s\n", client_index, buffer);
 
         // Gestion des commandes
         if (buffer[0] == '/'){
+            printf("Commande reçue\n");
             // Extraire la commande
             char *commande = strtok(buffer, " ");
             commande++; // Ignorer le caractère '/' dans la commande
-            // Traiter la commande
-            if (strcmp(commande, "list") == 0) {
-                send_client_list(pseudo_buffer);
+            printf("Commande : %s\n", commande);
 
+            if (strncmp(commande, "list", strlen("list")) == 0) {
+                printf("Sending list to client");
+                send_all_client_connected(client_socket);
             }
-            else if(strcmp(commande,"sendFiles")==0) {
+            else if(strncmp(commande, "sendFiles", strlen("sendFiles"))==0) {
                 handle_file_reception_command(server_socket_file);
             }
-            else if (strcmp(commande, "getFiles")==0){
+            else if (strncmp(commande, "getFiles", strlen("getFiles")) == 0) {
                 printf("getFiles");
                 handle_get_files_commande(client_socket,pseudo_buffer,server_socket_file);
             }
@@ -184,71 +109,36 @@ void *handle_client(void *arg) {
                 // Déconnecter le client
                 break;
             }
-            else if (strcmp(commande, "help") == 0){
-                send_manual(pseudo_buffer);
+            else if (strncmp(commande, "help",strlen("help")) == 0){
+                send_manual(client_socket);
             }
             else if (strcmp(commande, "mp") == 0){
                 //Message privé
                 //Extraire le pseudo et le message
-                char *pseudo = strtok(NULL, " ");
+                char *pseudo_target = strtok(NULL, " ");
                 char *message = strtok(NULL, "");
 
                 // Vérifier que le pseudo et le message sont valides
-                if (pseudo != NULL && message != NULL) {
+                if (pseudo_target != NULL && message != NULL) {
                     // Envoyer le message privé
-                    mp_client(info->index, pseudo, message);
+                    mp_client(client_socket,info->pseudo,pseudo_target,message);
                 } else {
                     // Envoyer un message d'erreur au client
-                    mp_client(0, info->pseudo, "Format de commande invalide pour MP");
+                    send_to_one_client("error","format de commande invalide",client_socket);
                 }
             }
             // Gestion des tags
             else {
                 // Envoyer un message d'erreur au client
-                mp_client(0, info->pseudo, "Commande inconnue");
+                send_to_one_client("error","commande inconnue",client_socket);
             }
         }
         else if (strstr(buffer, "@")) {
-            // Trouver la position de l'arobase
-            char *at_position = strchr(buffer, '@');
-
-            // Extraire le pseudo qui suit l'arobase
-            char pseudo[MAX_PSEUDO_LENGTH + 1]; // +1 pour le caractère de fin de chaîne
-            int extracted_length = 0;
-            sscanf(at_position + 1, "%s%n", pseudo, &extracted_length);
-
-            // Vérifier si le pseudo extrait est valide
-            if (extracted_length == 0) {
-                // Envoyer un message d'erreur au client
-                mp_client(0, info->pseudo, "Format de commande invalide pour tag");
-                continue;
-            }
-
-            //Verifier si le pseudo existe
-            if (is_pseudo_available(pseudo)==1) {
-                // Envoyer un message d'erreur au client
-                mp_client(0, info->pseudo, "Aucun client avec ce pseudo");
-                continue;
-            }
-
-            // Vérifie la longueur du pseudo extrait
-            if (extracted_length <= MAX_PSEUDO_LENGTH) {
-                // Traite le message avec le pseudo extrait
-                char message[BUFFER_SIZE];
-                sprintf(message, "%s%s", info->pseudo, " vous a tagué ");
-                send_message_to_all_clients(client_index, buffer);
-                mp_client(0,pseudo, message);
-            }
-            else {
-                printf("Pseudo trop long\n");
-                // Envoyer un message d'erreur au client
-                mp_client(0, info->pseudo, "Pseudo trop long");
-            }
-
+            handle_tag_message(buffer,client_index,client_socket,info->pseudo);
         }
         else {
             // Renvoyer le message à tous les autres clients
-            send_message_to_all_clients(client_index, buffer);
+            send_message_to_all_clients(client_index, info->pseudo, buffer);
         }
     }
 
@@ -260,8 +150,6 @@ void *handle_client(void *arg) {
     free(args);
     disconnect_client(info);
 }
-
-
 
 void disconnect_client(client_info *info) {
     int client_socket = info->socket_fd;
@@ -284,3 +172,5 @@ void disconnect_client(client_info *info) {
     // Terminer le thread associé au client
     pthread_exit(NULL);
 }
+
+

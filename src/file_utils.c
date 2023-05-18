@@ -100,6 +100,7 @@ void send_file(const char *patch_file_name, int sockfd,const char *file_name){
 
 int check_valid_input(char *selected_indices, char *file_list[]) {
     int valid_input = 1;
+
     for(int i = 0; i < strlen(selected_indices); i++) {
         if(selected_indices[i] != ',' && !isdigit(selected_indices[i])) {
             valid_input = 0;
@@ -159,12 +160,10 @@ void list_files_in_directory(char *file_list[],const char *patch_file ) {
     // pour chaque fichier dans le répertoire
     while ((de = readdir(dr)) != NULL && i < MAX_FILES_LIST) {
         if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) {
-            file_list[i] = malloc(strlen(de->d_name) + 1);
-            strcpy(file_list[i], de->d_name);
+            file_list[i] = strdup(de->d_name);  // Copiez le nom du fichier dans le tas
             i++;
         }
     }
-
     closedir(dr); //ferme le répertoire
 }
 
