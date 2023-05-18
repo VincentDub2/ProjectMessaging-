@@ -50,7 +50,7 @@ void display_tag_message(const char *message_received, const char *pseudo) {
         // Efface la ligne actuelle
         printf("\033[2K\r");
         // Affiche le message formaté avec l'heure, le pseudo du tagué en couleur, le pseudo de l'envoyeur et le message
-        printf("[%s] %s \033[1;36m%s\033[0m\n", time_buffer, extracted_pseudo, message_received);
+        printf("[%s] %s : %s \n", time_buffer, extracted_sender_pseudo, extracted_message);
     }
 }
 
