@@ -144,7 +144,6 @@ int handle_get_files_commande(int socket_client, const char *pseudo, int serveur
 
     send_file_list(file_list, socket_client);
 
-    printf("After l'envoie de la liste des fichiers\n");
 
     file_name = file_list[0];
 
