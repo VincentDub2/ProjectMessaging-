@@ -6,6 +6,10 @@
 
 #define MAX_CLIENTS 10
 
+#define MAX_CHANNELS 10
+
+#define MAX_CLIENT_CHANNEL 10
+
 #define BUFFER_SIZE 2048
 
 #define MAX_PSEUDO_LENGTH 20
@@ -25,6 +29,8 @@
 #define PATCH_CLIENT_FILE "client_files" // Dossier contenant les fichiers du client qui peuvent etre envoyes au serveur
 
 #define PATCH_SERVEUR_FILE "serveur_files" // Dossier contenant les fichiers du serveur qui peuvent etre envoyes au client
+
+#define CHANNEL_FILE "channel.txt" // Dossier contenant les fichiers des channels
 
 #define MAX_FILES_LIST 100 // Nombre maximum de fichiers pouvant etre liste
 

@@ -29,6 +29,28 @@ Commandes disponibles :
     Récupère un fichier du serveur.
     Exemple : /getFiles
 
+/set <nom channel>
+    Permet de changer ça conversation par défaut (all)
+    Exemple : /set cuisine
+
+/create <nom channel> <description>
+    Permet de créer un channel
+    Exemple : /create cuisine venez parler de cuisine ^^
+
+/leave <nom channel>
+    Permet de quitter un channel 
+    Exemple : /leave cuisine
+
+/delete <nom channel>
+    Permet de supprimer un channel 
+    Exemple : /delete cuisine
+
+/getChannels 
+    Permet d'obtenir la liste des channels disponibles avec 
+    Le nombre de client connecté
+    Exemple : /getChannels
+
+	
 ------------------------------------------
     User manual of the client chat
 

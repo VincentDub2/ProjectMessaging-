@@ -25,6 +25,7 @@ int main() {
     setup_sigint_handler(socket_fd);
 
     // Connection au serveur
+    //Scoket_fd est le socket du client
     connect_to_server(socket_fd, SERVER_IP, PORT);
     printf("Connecté au serveur\n");
 

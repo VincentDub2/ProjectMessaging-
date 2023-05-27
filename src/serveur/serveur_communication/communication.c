@@ -45,6 +45,9 @@ int send_to_all_client(const char* protocol,const char* message, int sender_inde
 
     while (curr != NULL) {
         if (curr->pseudo!=NULL && curr->index!=sender_index && curr->socket_fd!=NULL) {
+            // Envoie le message au client
+
+            //Le zero dans send sert a dire que le message est de taille BUFFER_SIZE
             if (send(curr->socket_fd, buffer, BUFFER_SIZE, 0) == -1) {
                 char error_message[BUFFER_SIZE];
                 sprintf(error_message,"Erreur lors de l'envoi de %s :%s a tous les clients",protocol,message);

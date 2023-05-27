@@ -14,8 +14,16 @@
 
 #include "../../include/serveur/client_handler.h"
 #include "../../include/serveur/serveur_utils/handle_error_thread.h"
+#include "../../include/serveur/serveur_utils/channel.h"
 
 void wait_for_clients(int server_socket_message, int server_socket_file) {
+
+
+
+
+    load_channels(); // Charger les channels depuis le fichier
+    printf("Chargement des channels terminé\n");
+
 
     // Ajouter le compte serveur à la liste des clients
     add_serveur_account();

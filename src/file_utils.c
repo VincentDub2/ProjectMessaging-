@@ -39,7 +39,7 @@ void send_file(const char *patch_file_name, int sockfd,const char *file_name){
     // Get file size
     fseek(fp, 0, SEEK_END);
     int file_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_SET); // send file from beginning
 
     // Send file size
     if (send(sockfd, &file_size, sizeof(file_size), 0) == -1) {

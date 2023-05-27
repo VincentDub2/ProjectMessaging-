@@ -37,6 +37,12 @@
 
 #include "../../include/serveur/handle_tag/handle_tag.h"
 
+#include "../../include/serveur/command_channel/listChannel.h"
+
+#include "../../include/serveur/serveur_utils/channel.h"
+
+#include "../../include/serveur/command_channel/send_msg_channel.h"
+
 void *handle_client(void *arg) {
 
     thread_args *args = (thread_args *) arg;
@@ -126,19 +132,81 @@ void *handle_client(void *arg) {
                     // Envoyer un message d'erreur au client
                     send_to_one_client("error","format de commande invalide",client_socket);
                 }
+            }else if (strncmp(commande,"getChannels",strlen("getChannels"))==0){
+                // Récupérer la liste des channels
+                sendChannels(client_socket);
+            } else if (strncmp(commande,"join",strlen("join"))==0){
+                char *channel_name = strtok(NULL, " ");
+                if (channel_name == NULL){
+                    send_to_one_client("error","format de commande invalide",client_socket);
+                } else {
+                    if (join_channel(info,channel_name)!=0){
+                        send_to_one_client("error","channel inexistant",client_socket);
+                    } else {
+                        send_to_one_client("success","channel rejoint",client_socket);
+                    }
+                }
+            } else if (strncmp(commande,"leave", strlen("leave"))==0){
+                char *channel_name = strtok(NULL, " ");
+                if (channel_name == NULL){
+                    send_to_one_client("error","format de commande invalide",client_socket);
+                } else {
+                    if (quit_channel(info, channel_name)!=0){
+                        send_to_one_client("error","channel inexistant",client_socket);
+                    } else {
+                        send_to_one_client("success","channel quitté",client_socket);
+                    }
+                }
+            } else if (strncmp(commande,"create", strlen("create"))==0){
+                char *channel_name = strtok(NULL, " ");
+                char *description = strtok(NULL, "\n");
+                if (channel_name == NULL || description == NULL){
+                    send_to_one_client("error","format de commande invalide",client_socket);
+                } else {
+                    if (create_channel(channel_name,description,pseudo_buffer)==0){
+                        send_to_one_client("error","channel déjà existant",client_socket);
+                    } else {
+                        send_to_one_client("success","channel créé",client_socket);
+                    }
+                }
+            } else if (strncmp(commande,"send", strlen("send"))==0){
+                char *channel_name = strtok(NULL, " ");
+                char *message = strtok(NULL, "");
+                if (channel_name != NULL && message != NULL) {
+                    // Envoyer le message privé
+                    send_msg_to_channel(channel_name,message,pseudo_buffer,client_socket);
+                } else {
+                    // Envoyer un message d'erreur au client
+                    send_to_one_client("error","format de commande invalide",client_socket);
+                }
+            }else if (strncmp(commande,"delete", strlen("delete"))==0){
+                char *channel_name = strtok(NULL, " ");
+                if (channel_name == NULL){
+                    send_to_one_client("error","format de commande invalide",client_socket);
+                } else {
+                    if (delete_channel(channel_name)!=1){
+                        send_to_one_client("error","channel inexistant",client_socket);
+                    } else {
+                        send_to_one_client("success","channel supprimé",client_socket);
+                    }
+                }
+            } else if (strncmp(commande,"all", strlen("all"))==0){
+                char *message = strtok(NULL, "");
+               if (strstr(buffer, "@")) {
+                        handle_tag_message(message,client_index,client_socket,info->pseudo);
+               } else {
+                   send_message_to_all_clients(client_index, info->pseudo, message);
+               }
             }
             // Gestion des tags
             else {
                 // Envoyer un message d'erreur au client
                 send_to_one_client("error","commande inconnue",client_socket);
             }
-        }
-        else if (strstr(buffer, "@")) {
-            handle_tag_message(buffer,client_index,client_socket,info->pseudo);
+
         }
         else {
-            // Renvoyer le message à tous les autres clients
-            send_message_to_all_clients(client_index, info->pseudo, buffer);
+            send_to_one_client("error","protocol invalide",client_socket);
         }
     }
 

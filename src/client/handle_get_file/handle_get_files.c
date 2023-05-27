@@ -15,8 +15,6 @@
 
 #include "../../../include/common.h"
 
-
-
 void* receive_files(void* arg) {
 
     int socket_file = socket(AF_INET, SOCK_STREAM, 0);
@@ -193,9 +191,12 @@ void handle_get_files_command(int client_socket,int pipefd[2]) {
             perror("Erreur lors de la création du thread d'envoi de fichiers");
         }
 
+
         // return send_file_thread;
     }
 
 }
+
+
 
 

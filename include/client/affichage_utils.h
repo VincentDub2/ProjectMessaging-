@@ -5,7 +5,7 @@ void display_message(const char *message);
 // pre : message valide
 // post : affiche le message dans un format spécifique
 
-void display_sent_message(const char *pseudo, const char *message);
+void display_sent_message(const char *pseudo, const char *message,char * channel);
 // pre : pseudo valide / message valide
 // post : affiche le message dans un format spécifique
 

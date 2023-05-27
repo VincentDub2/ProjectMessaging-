@@ -11,6 +11,8 @@
 
 #include "../../../include/serveur/serveur_annoucement/client_event.h"
 
+#include "../../../include/serveur/serveur_utils/channel.h"
+
 int server_socket_msg;
 int server_socket_file;
 
@@ -18,6 +20,7 @@ int server_socket_file;
 
 void sigint_handler(int signum) {
     // Arrêter le serveur
+    save_channels();
 
     send_shutdown_message_to_clients();
 

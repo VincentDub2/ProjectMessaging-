@@ -23,7 +23,7 @@ void *send_messages_thread(void *arg);
  * @param message Le message à envoyer.
  * @return 0 si l'envoi du message s'est déroulé avec succès, -1 en cas d'erreur.
  */
-int send_message(int socket_fd, const char* message);
+int send_message(int socket_fd, char* buffer);
 
 
 

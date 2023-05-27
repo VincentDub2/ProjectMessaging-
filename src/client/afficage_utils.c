@@ -40,7 +40,7 @@ void display_message(const char *message_received) {
     fflush(stdout);
 }
 
-void display_sent_message(const char *pseudo, const char *message) {
+void display_sent_message(const char *pseudo, const char *message,char * channel) {
     time_t rawtime;
     struct tm *timeinfo;
     char time_buffer[9]; // Format HH:MM:SS\0
@@ -57,7 +57,7 @@ void display_sent_message(const char *pseudo, const char *message) {
     printf("\033[2K\r");
 
     // Affiche le message formaté avec le pseudo, l'heure et le message
-    printf("[%s] %s: %s", time_buffer, pseudo, message);
+    printf("[%s] [%s] %s: %s", time_buffer,channel,pseudo, message);
 
     // Réaffiche la saisie de l'utilisateur
     printf("Entrez votre message: ");

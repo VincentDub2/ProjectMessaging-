@@ -37,7 +37,7 @@ void display_all_message(const char *message_received) {
     // Efface la ligne actuelle
     printf("\033[2K\r");
     // Affiche le message formaté avec le pseudo, l'heure et le message
-    printf("[%s] %s: %s", time_buffer, username, message);
+    printf("[%s] [all] %s: %s", time_buffer, username, message);
     printf("Entrez votre message: ");
     fflush(stdout);
 }

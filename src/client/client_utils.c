@@ -88,6 +88,8 @@ char *ask_for_pseudo(int socket_fd) {
         }
     } while (!pseudo_accepted);
 
+
+
     return buffer;
 }
 

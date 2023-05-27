@@ -22,8 +22,13 @@
 #include "../../../include/client/display_file/display_liste_file.h"
 #include "../../../include/client/affichage_utils.h"
 #include "../../../include/client/handle_get_file/get_file_valid_indice.h"
+#include "../../../include/client/display_success/display_success.h"
+#include "../../../include/client/display_channels/display_channels.h"
+#include "../../../include/client/display_channels/display_channels_message.h"
 
 
+
+// Structure pour stocker les arguments du thread
 void *receive_messages_thread(void *arg) {
     //On récupère le socket
     ReceiveThreadArgs *args = (ReceiveThreadArgs *)arg;
@@ -62,7 +67,7 @@ void *receive_messages_thread(void *arg) {
         strncpy(protocol, buffer, protocol_length);
         protocol[protocol_length] = '\0';
 
-        const char *message = colon_position + 2;
+       char *message = colon_position + 2;
 
         // Gestion des données envoyées par le serveur
         // Traiter la commande
@@ -98,6 +103,12 @@ void *receive_messages_thread(void *arg) {
             printf("Le fichier a été envoyé \n");
         } else if(strcmp(protocol,"askIndice") == 0) {
             get_file_valid_indice(args->pipe_fd,socket_fd);
+        } else if (strcmp(protocol,"channelList")==0){
+            display_single_channel(message);
+        } else if (strcmp(protocol,"success")==0){
+            display_success_message(message);
+        } else if (strcmp(protocol,"channel")==0){
+              display_channel_message(message);
         }
         else {
             printf("Erreur: protocole inconnu\n");
