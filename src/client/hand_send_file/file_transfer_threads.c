@@ -25,6 +25,8 @@ void *send_file_thread_func(void *args) {
 
     memset(&server_addr, 0, sizeof(server_addr));
 
+    
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     server_addr.sin_port = htons(SERVER_PORT_FILE);
@@ -35,21 +37,43 @@ void *send_file_thread_func(void *args) {
         exit(EXIT_FAILURE);
     }
 
+
     // Envoyez les fichiers sélectionnés
     printf("Vous avez sélectionné les fichiers suivants:\n");
     printf("%s\n", thread_args->selected_indices);
 
-    char *token = strtok(thread_args->selected_indices, ",");
+    char **file_list = thread_args->file_list;
+
+
+
+    char *saveptr;
+     char *token = strtok_r(thread_args->selected_indices, ",", &saveptr);
 
     char response[] = "READY";
-    send(socket_file, response, sizeof(response), 0);
+    if (send(socket_file, response, sizeof(response), 0)==-1){
+        perror("Erreur lors de l'envoi de la réponse READY");
+        close(socket_file);
+        exit(EXIT_FAILURE);
+    }
 
     while(token != NULL) {
-        int file_index = atoi(token);
-        char* file_name = thread_args->file_list[file_index];
+         char *endptr;
+       int file_index = strtol(token, &endptr, 10);
+
+       if (endptr == token) {
+            perror("Erreur lors de la conversion de l'index du fichier en entier");
+        } else {
+
+
+        char* file_name = file_list[file_index];
+
+        printf("Le nom fichier est : %s\n",file_name);
+
 
         if(file_name != NULL) {
             char full_file_path[256];
+
+            memset(full_file_path,0,256);
 
             sprintf(full_file_path, "%s/%s", PATCH_CLIENT_FILE, file_name);
 
@@ -61,12 +85,13 @@ void *send_file_thread_func(void *args) {
 
         }
 
-        token = strtok(NULL, ",");
+         token = strtok_r(NULL, ",", &saveptr);
 
         if (token != NULL) {
             // Indicate that we are ready to send the next file
             char response[] = "READY";
             send(socket_file, response, sizeof(response), 0);
+        }
         }
     }
 
@@ -75,7 +100,14 @@ void *send_file_thread_func(void *args) {
 
     close(socket_file);
 
+    // Libérez la mémoire allouée pour les arguments du thread
     free(thread_args->selected_indices);
+
+    for (int i = 0; i < MAX_FILES_LIST && file_list[i] != NULL; i++) {
+        free(file_list[i]);
+    }
+
+    free(thread_args->file_list);
     free(thread_args);
 
     printf("Le transfert de fichier est terminé\n");

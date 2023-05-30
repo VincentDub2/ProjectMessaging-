@@ -5,7 +5,7 @@
 void *send_file_thread_func(void *arg);
 
 typedef struct {
-    char *file_list[MAX_FILES_LIST];
+    char **file_list;
     char selected_indices[MAX_FILES_LIST];
 } FileSendThreadArgs;
 

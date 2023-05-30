@@ -7,6 +7,9 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 
 
 #include "../../../include/serveur/command_transfer_file/handle_file_reception.h"
@@ -25,68 +28,74 @@ void* handle_file_reception(void* arg) {
     while (1) { //get(server_running)
 
         char buffer[BUFFER_SIZE];
-        recv(client_socket, buffer, sizeof(buffer), 0);
+        int bytes_received;
+        bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+
+        if (bytes_received == -1){
+            perror("Erreur lors de la réception du message pour démarrer le transfert de fichier");
+            break;
+        }
         printf("buffer : %s\n", buffer);
+
         if (strcmp(buffer, "END") == 0) {
             break;
         }
+
         else if (strcmp(buffer, "READY") == 0) {
 
             char file_name[256];
-            int bytes_received;
-            do {
-                bytes_received = recv(client_socket, file_name, sizeof(file_name), 0);
-                if (bytes_received == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                    usleep(200000);
-                    continue;
-                } else if (bytes_received <= 0) {
-                    perror("Erreur lors de la réception du nom du fichier");
-                    break;
-                }
-            } while (bytes_received == -1);
 
-            printf("file name received : %s \n", file_name);
-            // Ouverture du fichier pour écriture
-            char full_file_path[256];
-            sprintf(full_file_path, "%s/%s",PATCH_SERVEUR_FILE, file_name);
+            bytes_received = recv(client_socket, file_name, sizeof(file_name), 0);
 
-            int file_fd = open(full_file_path, O_WRONLY | O_CREAT, 0644);
-            if (file_fd == -1) {
-                perror("Erreur lors de l'ouverture du fichier");
-                // ou traiter l'erreur comme vous le souhaitez
+            printf("Byte receive : %d",bytes_received);
+            if (bytes_received == -1){
+                perror("Erreur lors de la réception du nom du fichier");
+                break;
             }
 
-            // ...
+            file_name[bytes_received] = '\0';
+
+
+            printf("Nom du fichier reçu : %s\n", file_name);
+
+            // Ouverture du fichier pour écriture
+            char full_file_path[256];
+
+            memset(full_file_path,0,256);
+
+            sprintf(full_file_path, "%s/%s", PATCH_SERVEUR_FILE, file_name);
+
+            printf("Full path :%s",full_file_path);
+
+            int file_fd = open(full_file_path, O_WRONLY | O_CREAT, 0644);
+
+            if (file_fd == -1) {
+                perror("Erreur lors de l'ouverture du fichier");
+                break;
+            }
 
             // Réception de la taille du fichier
             int file_size;
-            do {
-                bytes_received = recv(client_socket, &file_size, sizeof(file_size), 0);
-                if (bytes_received == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                    usleep(200000);
-                    continue;
-                } else if (bytes_received <= 0) {
-                    perror("Erreur lors de la réception de la taille du fichier");
-                    break;
-                }
-            } while (bytes_received == -1);
 
-            printf("file size received : %d \n", file_size);
-            // ...
+            bytes_received = recv(client_socket, &file_size, sizeof(file_size), 0);
 
-            // Reception du fichier
+            if (bytes_received == -1){
+                perror("Erreur lors de la réception de la taille du fichier");
+                break;
+            }else if (bytes_received == 0) {
+                printf("La connexion a été fermée par le client");
+            break;
+            }
+
+            printf("Taille du fichier reçue : %d\n", file_size);
+
+            // Réception du fichier
             char buffer[BUFFER_SIZE];
             int remaining_bytes = file_size; // Nombre d'octets restant à lire
 
-
-            // Le min permet de recevoir le fichier par morceaux
-            // et d'éviter de recevoir plus que la taille du fichier quand on arrive à la fin
             while (remaining_bytes > 0) {
                 bytes_received = recv(client_socket, buffer, min(BUFFER_SIZE, remaining_bytes), 0);
-                if (bytes_received == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                    usleep(200000);
-                    continue;
-                } else if (bytes_received <= 0) {
+                if (bytes_received == -1){
                     perror("Erreur lors de la réception du fichier");
                     break;
                 }
@@ -97,7 +106,6 @@ void* handle_file_reception(void* arg) {
             // Fermeture du fichier
             close(file_fd);
 
-            printf("file received\n");
             char response[] = "READY";
             send(client_socket, response, sizeof(response), 0);
         }

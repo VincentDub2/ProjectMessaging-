@@ -16,7 +16,34 @@
 #include "../../include/client/message_thread/send_message_thread.h"
 
 
-int main() {
+int main(int argc, char *argv[]) {
+    // Vérification du nombre d'arguments
+    if (argc < 5) {
+        printf("Usage: %s -port <port_number> -addressip <ip_address>\n", argv[0]);
+        return 1;
+    }
+
+    int port = 0;
+    char* addressip = NULL;
+
+    // Parcours des arguments
+    for (int i = 1; i < argc; i += 2) {
+        if (strcmp(argv[i], "-port") == 0) {
+            port = atoi(argv[i + 1]);
+        } else if (strcmp(argv[i], "-addressip") == 0) {
+            addressip = argv[i + 1];
+        } else {
+            printf("Argument invalide: %s\n", argv[i]);
+            return 1;
+        }
+    }
+
+    // Vérification des valeurs des arguments
+    if (port == 0 || addressip == NULL) {
+        printf("Valeur d'argument invalide.\n");
+        return 1;
+    }
+
     // Crée un nouveau socket et se connecte au serveur
 
     int socket_fd = create_socket();
@@ -26,7 +53,7 @@ int main() {
 
     // Connection au serveur
     //Scoket_fd est le socket du client
-    connect_to_server(socket_fd, SERVER_IP, PORT);
+    connect_to_server(socket_fd, addressip, port);
     printf("Connecté au serveur\n");
 
     printf("Bienvenue sur le chat ! Pas de spam | Pas d'insulte.\n");

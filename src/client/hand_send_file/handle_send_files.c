@@ -36,8 +36,15 @@ void handle_send_files_command() {
 
     pthread_t send_file_thread;
 
-    char *file_list[MAX_FILES_LIST] = {NULL};
+    char **file_list = malloc(MAX_FILES_LIST * sizeof(char *));
+
+    if (!file_list) {
+        perror("Erreur d'allocation pour file_list");
+        return -1;
+    }
+
     list_files_in_directory(file_list,PATCH_CLIENT_FILE);
+
     display_files(file_list);
     printf("----------------------------------\n");
 
@@ -72,7 +79,7 @@ void handle_send_files_command() {
          */
 
         FileSendThreadArgs* args = malloc(sizeof(FileSendThreadArgs));
-        memcpy(args->file_list, file_list, sizeof(file_list));
+        args->file_list = file_list;
         strcpy(args->selected_indices, selected_indices);
 
         //printf("%s",args->selected_indices);
@@ -82,6 +89,7 @@ void handle_send_files_command() {
         }
 
         // return send_file_thread;
+
     }
 
     // Libérez la mémoire allouée pour les noms de fichiers

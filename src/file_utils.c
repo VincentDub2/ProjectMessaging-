@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-
+#include <netinet/in.h>
 
 #include <ctype.h>
 
@@ -30,12 +30,13 @@ void send_file(const char *patch_file_name, int sockfd,const char *file_name){
         exit(1);
     }
 
-    // Send file name
-    if (send(sockfd, file_name, strlen(file_name) + 1, 0) == -1) {
+
+    printf("File name : %s",file_name);
+    if (send(sockfd, file_name, strlen(file_name) + 1, 0) <= 0) {
         perror("[-]Error in sending file name.");
         exit(1);
     }
-
+  
     // Get file size
     fseek(fp, 0, SEEK_END);
     int file_size = ftell(fp);
