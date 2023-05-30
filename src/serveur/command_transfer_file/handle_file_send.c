@@ -133,7 +133,9 @@ int handle_get_files_commande(int socket_client, const char *pseudo, int serveur
     list_files_in_directory(file_list, PATCH_SERVEUR_FILE);
 
     char *file_name = file_list[0];
+    //On affiche la liste des fichiers dispo
 
+    printf("Liste des fichiers disponibles :\n");
     int index = 0;
     while (file_name !=NULL){
         printf("file name : %s\n", file_name);
@@ -144,16 +146,7 @@ int handle_get_files_commande(int socket_client, const char *pseudo, int serveur
 
     send_file_list(file_list, socket_client);
 
-
-    file_name = file_list[0];
-
-    index = 0;
-    while (file_name !=NULL){
-        printf("file name : %s\n", file_name);
-        index++;
-        file_name = file_list[index];
-    }
-
+    // Attend la sélection des fichiers
     char ask[BUFFER_SIZE];
 
     memset(ask, 0, BUFFER_SIZE);
@@ -172,7 +165,7 @@ int handle_get_files_commande(int socket_client, const char *pseudo, int serveur
     printf("En attente de la réception des indices des fichiers...\n");
 
     memset(ask, 0, BUFFER_SIZE);
-    strcat(ask, "NULL");
+    strcat(ask, "NULL"); // Permet d'activer le mode de demande d'indice du client
 
     if(send_to_one_client("askIndice",ask,socket_client)){
         perror("Erreur lors de l'envoi de la demande des indices des fichiers au client");
@@ -227,7 +220,6 @@ int handle_get_files_commande(int socket_client, const char *pseudo, int serveur
                 return -1;
             }
 
-            // Vous pouvez utiliser pthread_detach si vous ne voulez pas attendre le thread avec pthread_join
             pthread_detach(send_files_thread);
 
             printf("Confirmation envoyée au client.\n");

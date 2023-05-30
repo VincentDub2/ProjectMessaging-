@@ -15,9 +15,9 @@ static int isFirst = 1;
 
 void display_single_channel(char *channel_received) {
     // Vérifie si le serveur a fini d'envoyer les détails du channel.
-    if (strcmp(channel_received, "fin") == 0) {
+    if (strcmp(channel_received, "end") == 0) {
         // Réinitialise isFirst à 1 et retourne.
-        printf("Entrez votre message: ");
+        printf("Entrer votre message :");
         fflush(stdout);
         isFirst = 1;
         return;
@@ -38,6 +38,4 @@ void display_single_channel(char *channel_received) {
 
     // Affiche les détails du channel.
     printf("%15s | %50s | %15s\n", name ? name : "", description ? description : "", num_users_str ? num_users_str : "");
-
-    fflush(stdout);
 }

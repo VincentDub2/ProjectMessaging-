@@ -66,14 +66,16 @@ void handle_send_files_command() {
     }
 
     if (file_can_be_sent) {
+        /*
         printf("Vous avez sélectionné les fichiers suivants:\n");
         printf("%s\n",selected_indices);
+         */
 
         FileSendThreadArgs* args = malloc(sizeof(FileSendThreadArgs));
         memcpy(args->file_list, file_list, sizeof(file_list));
         strcpy(args->selected_indices, selected_indices);
 
-        printf("%s",args->selected_indices);
+        //printf("%s",args->selected_indices);
 
         if (pthread_create(&send_file_thread, NULL, send_file_thread_func, args) != 0) {
             perror("Erreur lors de la création du thread d'envoi de fichiers");

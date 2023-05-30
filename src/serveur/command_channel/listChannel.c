@@ -18,13 +18,21 @@ int sendChannels(int socket_client){
     char buffer[BUFFER_SIZE];
 
     pthread_mutex_lock(channels_mutex);
-    for (int i = 0; i < MAX_CHANNELS; i++) {
+    int empty = 1;
+
+    for (int i = 0 ; i < MAX_CHANNELS; i++) {
         if (channels[i].name[0] != '\0') {
+            empty=0;
             memset(buffer, 0, BUFFER_SIZE);
             sprintf(buffer, "%s:%s:%d", channels[i].name, channels[i].description, channels[i].num_users);
             send_to_one_client("channelList", buffer, socket_client);
         }
     }
+
+    if(empty==1){
+        send_to_one_client("channelList", "No channel", socket_client);
+    }
+
     send_to_one_client("channelList", "end", socket_client);
     pthread_mutex_unlock(channels_mutex);
 

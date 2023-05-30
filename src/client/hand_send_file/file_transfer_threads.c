@@ -53,7 +53,7 @@ void *send_file_thread_func(void *args) {
 
             sprintf(full_file_path, "%s/%s", PATCH_CLIENT_FILE, file_name);
 
-            printf("Envoi du fichier %s\n", full_file_path);
+            //printf("Envoi du fichier %s\n", full_file_path);
 
             // Envoyez le fichier
             send_file(full_file_path, socket_file, file_name);

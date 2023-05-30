@@ -72,10 +72,11 @@ void *send_messages_thread(void *arg) {
         //COMMANDE POUR SE DÉCONNECTER DU SERVEUR
         else if (strncmp(buffer, "/quit", strlen("/quit")) == 0) {
             exit(0);
-            break;
+
         } else if (message_send==0){
             // Envoie le message au serveur
             char message[BUFFER_SIZE];
+            memset(message, 0, BUFFER_SIZE);
             sprintf(message, "%s %s", default_channel, buffer);
             send_message(socket_fd, message);
         }

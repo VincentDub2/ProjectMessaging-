@@ -19,6 +19,7 @@ void* receive_files(void* arg) {
 
     int socket_file = socket(AF_INET, SOCK_STREAM, 0);
 
+
     if (socket_file < 0) {
         perror("Erreur lors de la création du socket");
         pthread_exit(NULL);
@@ -32,11 +33,20 @@ void* receive_files(void* arg) {
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     server_addr.sin_port = htons(SERVER_PORT_FILE);
 
+
+
     if (connect(socket_file, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         printf("Erreur de connexion au serveur avec le port spécifié %d et l'adresse IP spécifiée %s \n", SERVER_PORT_FILE, SERVER_IP);
         perror("Info  ");
         exit(EXIT_FAILURE);
     }
+
+
+    // Réception du message de démarrage du transfert de fichier
+
+
+    // Efface la ligne actuelle
+    printf("\033[2K\r");
 
     // Réception des fichiers
     while (1) {
@@ -129,10 +139,11 @@ void handle_get_files_command(int client_socket,int pipefd[2]) {
 
     char selected_indices[BUFFER_SIZE];
     memset(selected_indices, 0, BUFFER_SIZE);
-    //effacer la ligne actuel
-    printf("\033[2K");
-    printf("----------------------------------\n");
 
+    // Efface la ligne actuelle
+    printf("\033[2K\r");
+
+    printf("----------------------------------\n");
     printf("Attente de la sélection de fichier...\n");
 
     while (file_get_selected) {
@@ -179,17 +190,17 @@ void handle_get_files_command(int client_socket,int pipefd[2]) {
         }
     }
 
-    printf("Sortie de la sélection de fichier.\n");
-
     if (file_can_be_receive==0) {
         printf("Vous avez sélectionné les fichiers suivants:\n");
         printf("%s\n", selected_indices);
 
-        send(client_socket, selected_indices, strlen(selected_indices), 0);
+        //send(client_socket, selected_indices, strlen(selected_indices), 0);
 
         if (pthread_create(&thread_receive_files, NULL, receive_files, NULL) != 0) {
             perror("Erreur lors de la création du thread d'envoi de fichiers");
         }
+
+        return;
 
 
         // return send_file_thread;

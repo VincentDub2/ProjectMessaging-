@@ -69,7 +69,7 @@ void *handle_client(void *arg) {
     char buffer[BUFFER_SIZE];
     int bytes_received;
 
-    printf("Client %d est connecté\n", client_index);
+    printf("Le client %d viens de rejoindre le salon \n", client_index);
 
     while (1) {
 
@@ -89,15 +89,15 @@ void *handle_client(void *arg) {
             printf("Erreur de connection avec le client %d \n", client_index);
             break;
         }
-        printf("Client %d : %s\n", client_index, buffer);
+
+        printf("We received %d bytes from client %d\n", bytes_received, client_index);
+        printf("Message received from client %d : %s\n", client_index, buffer);
 
         // Gestion des commandes
         if (buffer[0] == '/'){
-            printf("Commande reçue\n");
             // Extraire la commande
             char *commande = strtok(buffer, " ");
             commande++; // Ignorer le caractère '/' dans la commande
-            printf("Commande : %s\n", commande);
 
             if (strncmp(commande, "list", strlen("list")) == 0) {
                 printf("Sending list to client");
@@ -202,11 +202,13 @@ void *handle_client(void *arg) {
             else {
                 // Envoyer un message d'erreur au client
                 send_to_one_client("error","commande inconnue",client_socket);
+                printf("Commande inconnue %s : %s \n", commande, buffer);
             }
 
         }
-        else {
+        else  if (buffer[0] != '\0') {
             send_to_one_client("error","protocol invalide",client_socket);
+            printf("Protocol invalide %s  \n", buffer);
         }
     }
 
