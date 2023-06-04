@@ -75,8 +75,7 @@ void *send_file_thread_func(void *args) {
 
     close(socket_file);
 
-    free(thread_args->selected_indices);
-    free(thread_args);
+    free(thread_args->file_list);
 
     printf("Le transfert de fichier est terminé\n");
     printf("----------------------------------\n");

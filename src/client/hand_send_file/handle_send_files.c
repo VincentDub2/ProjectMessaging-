@@ -40,7 +40,7 @@ void handle_send_files_command() {
 
     if (!file_list) {
         perror("Erreur d'allocation pour file_list");
-        return -1;
+        return ;
     }
 
     list_files_in_directory(file_list,PATCH_CLIENT_FILE);
