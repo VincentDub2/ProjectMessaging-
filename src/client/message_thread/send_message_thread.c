@@ -41,8 +41,13 @@ void *send_messages_thread(void *arg) {
                 default_channel[BUFFER_SIZE - 1] = '\0';
 
                 if (strcmp(value_after_set, "all") == 0) {
+                    memset(default_channel, 0, BUFFER_SIZE);
+                    char send_command[BUFFER_SIZE];
+                    sprintf(send_command, "/all");
                     printf("Vous êtes maintenant sur le channel all\n");
-                    strncmp(default_channel, "/all", BUFFER_SIZE - 1);
+                    stpncpy(default_channel, send_command, BUFFER_SIZE - 1);
+                    default_channel[BUFFER_SIZE - 1] = '\0';
+
                 } else {
                     printf("Vous êtes maintenant sur le channel %s\n", default_channel);
                     char send_command[BUFFER_SIZE];
