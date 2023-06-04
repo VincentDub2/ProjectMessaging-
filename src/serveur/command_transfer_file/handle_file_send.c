@@ -71,32 +71,32 @@ void *send_file_thread_func(void *args) {
 
     while (token != NULL) {
         char *endptr;
-       int file_index = strtol(token, &endptr, 10);
+        int file_index = strtol(token, &endptr, 10);
 
         if (endptr == token) {
             perror("Erreur lors de la conversion de l'index du fichier en entier");
         } else {
 
-        char* file_name = file_list[file_index];
+            char* file_name = file_list[file_index];
 
-        if(file_name != NULL) {
-            char full_file_path[256];
-            sprintf(full_file_path, "%s/%s", PATCH_SERVEUR_FILE, file_name);
+            if(file_name != NULL) {
+                char full_file_path[256];
+                sprintf(full_file_path, "%s/%s", PATCH_SERVEUR_FILE, file_name);
 
-            printf("Envoi du fichier %s\n", full_file_path);
+                printf("Envoi du fichier %s\n", full_file_path);
 
-            // Envoyez le fichier
-            send_file(full_file_path, client_socket, file_name);
+                // Envoyez le fichier
+                send_file(full_file_path, client_socket, file_name);
+            }
+
+            token = strtok_r(NULL, ",", &saveptr); // get next token
+
+            if (token != NULL) {
+                // Indicate that we are ready to send the next file
+                char response[] = "READY";
+                send(client_socket, response, sizeof(response), 0);
+            }
         }
-
-        token = strtok_r(NULL, ",", &saveptr); // get next token
-
-        if (token != NULL) {
-            // Indicate that we are ready to send the next file
-            char response[] = "READY";
-            send(client_socket, response, sizeof(response), 0);
-        }
-    }
     }
 
     char end[] = "END";
